@@ -60,7 +60,7 @@ function App() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setData(() => makeData(10000))
+      setData(() => makeData(100000))
     }, 1000)
 
     return () => clearTimeout(timeout)
@@ -77,9 +77,15 @@ function App() {
   return (
     <>
       <button onClick={logSelectedRows}>Log Selected Rows</button>
-      <Table ref={tableRef} data={data} columns={columns} pageSize={100} pageSizeOptions={[10, 20, 100]}/>
+      <Table
+        ref={tableRef}
+        data={data}
+        columns={columns}
+        pageSize={100}
+        pageSizeOptions={[10, 20, 100, 1000, 10000]}
+      />
     </>
-  )
+  );
 }
 
 export default App
