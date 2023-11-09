@@ -1,3 +1,4 @@
+import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 
 export type TableProps<TItem extends object> = {
@@ -17,6 +18,11 @@ export type TableProps<TItem extends object> = {
     isLoading?: boolean;
 
     /**
+     * Grid title
+     */
+    gridTitle?: JSX.Element | React.ReactNode;
+
+    /**
      * Table default page size.
      */
     pageSize?: number;
@@ -25,4 +31,9 @@ export type TableProps<TItem extends object> = {
      * Table page size options
      */
     pageSizeOptions?: number[];
+
+    /**
+     * Row selection mode.
+     */
+    rowSelectionMode?: "single" | "multiple";
 };

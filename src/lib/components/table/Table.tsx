@@ -1,13 +1,13 @@
-
-import * as React from 'react';
-import { TableProps, TableRef } from '../../types';
+import * as React from "react";
+import { TableProps, TableRef } from "../../types";
 import {
   Column,
   ColumnDef,
   ColumnFiltersState,
   ColumnOrderState,
   GroupingState,
-  Header,
+  Header, 
+  RowSelectionState,
   SortingState,
   Table,
   flexRender,
@@ -18,12 +18,43 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table'
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useVirtual } from 'react-virtual';
-import { Checkbox, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components';
-import {bundleIcon, ArrowSortDown20Filled, ArrowSortDown20Regular, ArrowSortUp20Filled, ArrowSortUp20Regular, GroupListRegular} from "@fluentui/react-icons"
+} from "@tanstack/react-table";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { useVirtual } from "react-virtual";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  Input,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuGroup,
+  MenuGroupHeader,
+  MenuItem,
+  MenuList,
+  MenuPopover,
+  MenuTrigger,
+  Popover,
+  PopoverSurface,
+  PopoverTrigger,
+  Radio,
+  mergeClasses,
+} from "@fluentui/react-components";
+import {
+  bundleIcon,
+  ArrowSortDown20Filled,
+  ArrowSortDown20Regular,
+  ArrowSortUp20Filled,
+  ArrowSortUp20Regular,
+  GroupListRegular,
+  Filter24Filled,
+  Search24Regular,
+} from "@fluentui/react-icons";
+import { useStaticStyles, useTableStaticStyles } from "./useTableStaticStyles";
+import { Pagination } from "./Pagination";
+import { ToggleGroupColumnIcon, ToggleSelectColumnIcon } from "./GridIcons";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
 
@@ -36,52 +67,60 @@ const reorderColumn = (
     columnOrder.indexOf(targetColumnId),
     0,
     columnOrder.splice(columnOrder.indexOf(draggedColumnId), 1)[0] as string
-  )
-  console.log("columnOrder = ", columnOrder);
-  return [...columnOrder]
-}
+  ); 
+  return [...columnOrder];
+};
 
 const DraggableColumnHeader: React.FC<{
-  header: Header<object, unknown>
-  table: Table<object>
+  header: Header<object, unknown>;
+  table: Table<object>;
 }> = ({ header, table }) => {
-  const { getState, setColumnOrder } = table
-  const { columnOrder } = getState()
-  const { column } = header
+  const { getState, setColumnOrder } = table;
+  const { columnOrder } = getState();
+  const { column } = header;
 
-  const [, dropRef] = useDrop({
-    accept: 'column',
+  const [{ isOver }, dropRef] = useDrop({
+    accept: "column",
     drop: (draggedColumn: Column<object>) => {
       const newColumnOrder = reorderColumn(
         draggedColumn.id,
         column.id,
         columnOrder
-      )
-      setColumnOrder(newColumnOrder)
-    },
-  })
+      ); 
+      setColumnOrder(newColumnOrder);
+    }, 
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  });  
 
   const [{ isDragging }, dragRef, previewRef] = useDrag({
-    collect: monitor => ({
+    collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
     item: () => column,
-    type: 'column',
-  })
+    type: "column",
+  });
+
+  const styles = useTableStaticStyles(); 
 
   return (
     <th
-      ref={dropRef}
       colSpan={header.colSpan}
-      style={{ opacity: isDragging ? 0.5 : 1, cursor: isDragging ? "drag" : "pointer", alignItems: "left", zIndex: 99 }}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        cursor: isDragging ? "drag" : "pointer",
+        alignItems: "left",
+        zIndex: 99,
+        backgroundColor: isOver ? "#0000000d" : "transparent",
+        border: isOver ? "1px dashed #0000000d" : "none",
+      }}
+      className={styles.tHeadCell}
     >
-      <div style={{ display: "flex", alignContent: "space-between", alignItems: "center", justifyContent: "space-between" }}>
-        <div
-          ref={previewRef}
-          style={{ cursor: "pointer", display: "flex", alignContent: "left", zIndex: 99 }}
-        >
+      <div className={styles.tHeadCellContent} ref={dropRef}>
+        <div ref={previewRef}>
           {header.isPlaceholder ? null : (
-            <div
+            <Button
               {...{
                 onClick: header.column.getToggleSortingHandler(),
                 onDoubleClick: () => {
@@ -96,6 +135,24 @@ const DraggableColumnHeader: React.FC<{
                 },
               }}
               ref={dragRef}
+              appearance="transparent"
+              tabIndex={-1}
+              className={styles.tHeadContentBtn}
+              icon={
+                {
+                  asc: (
+                    <strong>
+                      <SortAscIcon />
+                    </strong>
+                  ),
+                  desc: (
+                    <strong>
+                      <SortDescIcon />
+                    </strong>
+                  ),
+                }[header.column.getIsSorted() as string] ?? undefined
+              }
+              iconPosition="after"
             >
               {/* {header.column.getCanGroup() && (
                 <button
@@ -112,27 +169,25 @@ const DraggableColumnHeader: React.FC<{
                 </button>
               )} */}
 
-
               {flexRender(header.column.columnDef.header, header.getContext())}
 
               {/* indicator for grouping */}
               {header.column.getIsGrouped() && <GroupListRegular />}
-
-              {/* indicator for sorting */}
-              {{
-                asc: <strong><SortAscIcon /></strong>,
-                desc: <strong><SortDescIcon /></strong>,
-              }[header.column.getIsSorted() as string] ?? null}
+              {/* indicator for filtering */}
+              {header.column.getIsFiltered() && (
+                <strong>
+                  <Filter24Filled />
+                </strong>
+              )}
 
               {/* {header.column.columnDef.id && header.column.getCanResize() && <button ref={dragRef}>🟰</button>} */}
-            </div>
+            </Button>
           )}
         </div>
         <div>
           <Menu>
             <MenuTrigger disableButtonEnhancement>
-              <MenuButton appearance="transparent">
-              </MenuButton>
+              <MenuButton appearance="transparent"></MenuButton>
             </MenuTrigger>
 
             <MenuPopover>
@@ -143,8 +198,20 @@ const DraggableColumnHeader: React.FC<{
                   <MenuItem>Paste</MenuItem>
                   <MenuItem>Edit</MenuItem>
                 </MenuGroup>
-                {!header.column.getIsGrouped() && (<MenuItem onSelect={() => header.column.getToggleGroupingHandler()()}>Group Column</MenuItem>)}
-                {header.column.getIsGrouped() && (<MenuItem onSelect={() => header.column.getToggleGroupingHandler()()}>Remove Group</MenuItem>)}
+                {!header.column.getIsGrouped() && (
+                  <MenuItem
+                    onSelect={() => header.column.getToggleGroupingHandler()()}
+                  >
+                    Group Column
+                  </MenuItem>
+                )}
+                {header.column.getIsGrouped() && (
+                  <MenuItem
+                    onSelect={() => header.column.getToggleGroupingHandler()()}
+                  >
+                    Remove Group
+                  </MenuItem>
+                )}
                 <MenuDivider />
               </MenuList>
             </MenuPopover>
@@ -153,63 +220,75 @@ const DraggableColumnHeader: React.FC<{
       </div>
       {header.column.getCanResize() && (
         <div
-          {...{
-            onMouseDown: header.getResizeHandler(),
-            onTouchStart: header.getResizeHandler(),
-            className: `resizer ${header.column.getIsResizing() ? "isResizing" : ""
-              }`,
-          }}
+          onMouseDown={header.getResizeHandler()}
+          onTouchStart={header.getResizeHandler()}
+          className={mergeClasses(
+            styles.resizer,
+            column.getIsResizing() && styles.resizerActive
+          )}
         />
       )}
     </th>
   );
-}
+};
 
-export function AdvancedTable<TItem extends object>(props: TableProps<TItem>, ref: React.ForwardedRef<TableRef<TItem>>) {
-
-  const { columns, data } = props;
+export function AdvancedTable<TItem extends object>(
+  props: TableProps<TItem>,
+  ref: React.ForwardedRef<TableRef<TItem>>
+) {
+  const { columns, data, rowSelectionMode } = props;
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
-  const [globalFilter, setGlobalFilter] = React.useState('')
+  );
+  const [globalFilter, setGlobalFilter] = React.useState("");
   const [grouping, setGrouping] = React.useState<GroupingState>([]);
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = React.useState({});
 
   const tableColumns: ColumnDef<TItem>[] = React.useMemo(() => {
-    return [{
-      id: 'select',
-      size: 30,
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsSomeRowsSelected() ? "mixed" : table.getIsAllRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          disabled={!row.getCanSelect()}
-          onChange={row.getToggleSelectedHandler()}
-        />
-      ),
-      aggregatedCell: () => null,
-      enableColumnFilter: false,
-      enableGlobalFilter: false,
-      enableGrouping: false,
-      enableSorting: false,
-      enableResizing: false,
-      enableReorder: false,
-    },
-    ...columns]
+    return columns;
+    // return [
+    //   {
+    //     id: "select",
+    //     size: 10,
+    //     header: ({ table }) => (
+    //       <Checkbox
+    //         checked={
+    //           table.getIsSomeRowsSelected()
+    //             ? "mixed"
+    //             : table.getIsAllRowsSelected()
+    //         }
+    //         onChange={table.getToggleAllRowsSelectedHandler()}
+    //       />
+    //     ),
+    //     cell: ({ row }) => (
+    //       <Checkbox
+    //         checked={row.getIsSelected()}
+    //         disabled={!row.getCanSelect()}
+    //         onChange={row.getToggleSelectedHandler()}
+    //       />
+    //     ),
+    //     aggregatedCell: () => null,
+    //     enableColumnFilter: false,
+    //     enableGlobalFilter: false,
+    //     enableGrouping: false,
+    //     enableSorting: false,
+    //     enableResizing: false,
+    //     enableReorder: false,
+    //     enableHiding: false,
+    //     enablePinning: false,
+    //     enableMultiSort: false,
+    //   },
+    //   ...columns,
+    // ];
   }, [columns]);
 
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
-    tableColumns.map(column => column.id as string)
+    tableColumns.map((column) => column.id as string)
     //must start out with populated columnOrder so we can splice
-  )
+  );
 
   const table = useReactTable<TItem>({
     columns: tableColumns,
@@ -225,7 +304,8 @@ export function AdvancedTable<TItem extends object>(props: TableProps<TItem>, re
       columnVisibility,
     },
     columnResizeMode: "onChange",
-    enableRowSelection: true,
+    enableRowSelection: rowSelectionMode !== undefined,
+    enableMultiRowSelection: rowSelectionMode === "multiple",
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -241,28 +321,31 @@ export function AdvancedTable<TItem extends object>(props: TableProps<TItem>, re
     getExpandedRowModel: getExpandedRowModel(),
   });
 
-  React.useImperativeHandle(ref, () => {
-    return {
-      table,
-    }
-  }, [table]);
+  React.useImperativeHandle(
+    ref,
+    () => {
+      return {
+        table,
+      };
+    },
+    [table]
+  );
 
-  const tableContainerRef = React.useRef<HTMLDivElement>(null)
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
-  const { rows } = table.getRowModel()
+  const { rows } = table.getRowModel();
   const rowVirtualizer = useVirtual({
     parentRef: tableContainerRef,
     size: rows.length,
     overscan: 10,
-  })
-  const { virtualItems: virtualRows, totalSize } = rowVirtualizer
+  });
+  const { virtualItems: virtualRows, totalSize } = rowVirtualizer;
 
-  const paddingTop = virtualRows.length > 0 ? virtualRows?.[0]?.start || 0 : 0
+  const paddingTop = virtualRows.length > 0 ? virtualRows?.[0]?.start || 0 : 0;
   const paddingBottom =
     virtualRows.length > 0
       ? totalSize - (virtualRows?.[virtualRows.length - 1]?.end || 0)
       : 0;
-
 
   React.useEffect(() => {
     const pageSize = props.pageSize;
@@ -271,50 +354,98 @@ export function AdvancedTable<TItem extends object>(props: TableProps<TItem>, re
     }
   }, [props.pageSize, table]);
 
+  useStaticStyles();
+  const styles = useTableStaticStyles();
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="inline-block border border-black shadow rounded">
-        <div className="px-1 border-b border-black">
-          <label>
-            <input
-              {...{
-                type: "checkbox",
-                checked: table.getIsAllColumnsVisible(),
-                onChange: table.getToggleAllColumnsVisibilityHandler(),
-              }}
-            />{" "}
-            Toggle All
-          </label>
+      <div className={styles.tableTopHeaderContainer}>
+        <div className={styles.tableTopHeaderLeft}>{props.gridTitle}</div>
+        <div className={styles.tableTopHeaderRight}>
+          <Popover withArrow>
+            <PopoverTrigger disableButtonEnhancement>
+              <Button icon={<ToggleGroupColumnIcon />} />
+            </PopoverTrigger>
+
+            <PopoverSurface>
+              <div className={styles.tableTopHeaderColumnTogglePopover}>
+                <MenuGroupHeader>Group Columns</MenuGroupHeader>
+                {table.getAllLeafColumns().map((column) => {
+                  if (column.id === "select") return null;
+                  if (column.id === "id") return null;
+                  return (
+                    <Checkbox
+                      key={column.id}
+                      checked={column.getIsGrouped()}
+                      onChange={column.getToggleGroupingHandler()}
+                      disabled={!column.getCanGroup()}
+                      label={column.id}
+                    />
+                  );
+                })}
+              </div>
+            </PopoverSurface>
+          </Popover>
+          <Popover withArrow>
+            <PopoverTrigger disableButtonEnhancement>
+              <Button icon={<ToggleSelectColumnIcon />} />
+            </PopoverTrigger>
+
+            <PopoverSurface>
+              <div className={styles.tableTopHeaderColumnTogglePopover}>
+                <MenuGroupHeader>Toggle Columns</MenuGroupHeader>
+                <Checkbox
+                  checked={table.getIsAllColumnsVisible()}
+                  onChange={table.getToggleAllColumnsVisibilityHandler()}
+                  label={"Toggle All"}
+                />
+                <Divider />
+                {table.getAllLeafColumns().map((column) => {
+                  if (column.id === "select") return null;
+                  if (column.id === "id") return null;
+
+                  return (
+                    <Checkbox
+                      key={column.id}
+                      checked={column.getIsVisible()}
+                      onChange={column.getToggleVisibilityHandler()}
+                      label={column.id}
+                      disabled={!column.getCanHide()}
+                    />
+                  );
+                })}
+              </div>
+            </PopoverSurface>
+          </Popover>
+          <DebouncedInput
+            value={globalFilter ?? ""}
+            onChange={(value) => setGlobalFilter(String(value))}
+            className="p-2 font-lg shadow border border-block"
+            placeholder="Search all columns..."
+          />
         </div>
-        {table.getAllLeafColumns().map((column) => {
-          return (
-            <div key={column.id} className="px-1">
-              <label>
-                <input
-                  {...{
-                    type: "checkbox",
-                    checked: column.getIsVisible(),
-                    onChange: column.getToggleVisibilityHandler(),
-                  }}
-                />{" "}
-                {column.id}
-              </label>
-            </div>
-          );
-        })}
       </div>
-      <DebouncedInput
-        value={globalFilter ?? ""}
-        onChange={(value) => setGlobalFilter(String(value))}
-        className="p-2 font-lg shadow border border-block"
-        placeholder="Search all columns..."
-      />
-      <div ref={tableContainerRef} className="container">
-        <table style={{ width: "100%" }}>
-          <thead>
+
+      <div ref={tableContainerRef} className={styles.tableContainer}>
+        <table className={styles.table}>
+          <thead className={styles.tHead}>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
+                {rowSelectionMode === "multiple" && (
+                  <td style={{ width: "1rem" }}>
+                    <Checkbox
+                      checked={
+                        table.getIsSomeRowsSelected()
+                          ? "mixed"
+                          : table.getIsAllRowsSelected()
+                      }
+                      onChange={table.getToggleAllRowsSelectedHandler()}
+                    />
+                  </td>
+                )}
+                {rowSelectionMode === "single" && (
+                  <td style={{ width: "1rem" }}> </td>
+                )}
                 {headerGroup.headers.map((header) => {
                   return (
                     <DraggableColumnHeader
@@ -327,32 +458,64 @@ export function AdvancedTable<TItem extends object>(props: TableProps<TItem>, re
               </tr>
             ))}
           </thead>
-          <tbody style={{ maxHeight: "600px", overflow: "auto" }}>
+          <tbody className={styles.tBody}>
+            {/* placeholder for virtualization */}
             {paddingTop > 0 && (
-              <tr>
+              <tr className={styles.tBodyRow}>
                 <td style={{ height: `${paddingTop}px` }} />
               </tr>
             )}
             {virtualRows.map((virtualRow) => {
               const row = rows[virtualRow.index];
               return (
-                <tr key={row.id}>
+                <tr
+                  key={row.id}
+                  className={
+                    row.getIsSelected()
+                      ? styles.tBodySelectedRow
+                      : styles.tBodyRow
+                  }
+                >
+                  {rowSelectionMode == "multiple" && (
+                    <td className={styles.tBodyCell}>
+                      <Checkbox
+                        checked={
+                          row.getIsSomeSelected()
+                            ? "mixed"
+                            : row.getIsSelected() ||
+                              row.getIsAllSubRowsSelected()
+                        }
+                        disabled={!row.getCanSelect()}
+                        onChange={row.getToggleSelectedHandler()}
+                      />
+                    </td>
+                  )}
+                  {rowSelectionMode == "single" && (
+                    <td className={styles.tBodyCell}>
+                      <Radio
+                        checked={row.getIsSelected()}
+                        disabled={!row.getCanSelect()}
+                        onChange={row.getToggleSelectedHandler()}
+                      />
+                    </td>
+                  )}
                   {row.getVisibleCells().map((cell) => (
                     <td
                       {...{
                         key: cell.id,
                         style: {
-                          background: cell.getIsGrouped()
-                            ? "#0aff0082"
-                            : cell.getIsAggregated()
-                              ? "#ffa50078"
-                              : cell.getIsPlaceholder()
-                                ? "#ff000042"
-                                : "white",
+                          // background: cell.getIsGrouped()
+                          //   ? "#0aff0082"
+                          //   : cell.getIsAggregated()
+                          //   ? "#ffa50078"
+                          //   : cell.getIsPlaceholder()
+                          //   ? "#ff000042"
+                          //   : "white",
 
                           width: cell.column.getSize(),
                         },
                       }}
+                      className={styles.tBodyCell}
                     >
                       {cell.getIsGrouped() ? (
                         // If it's a grouped cell, add an expander and row count
@@ -380,7 +543,7 @@ export function AdvancedTable<TItem extends object>(props: TableProps<TItem>, re
                         // renderer for cell
                         flexRender(
                           cell.column.columnDef.aggregatedCell ??
-                          cell.column.columnDef.cell,
+                            cell.column.columnDef.cell,
                           cell.getContext()
                         )
                       ) : cell.getIsPlaceholder() ? null : ( // For cells with repeated values, render null
@@ -395,210 +558,86 @@ export function AdvancedTable<TItem extends object>(props: TableProps<TItem>, re
                 </tr>
               );
             })}
-            {
-              props.isLoading && virtualRows.length == 0 && (<>Please Wait...</>)
-            }
-            {/* {table.getRowModel().rows.map(row => (
-                            <tr key={row.id}>
-                                {row.getVisibleCells().map(cell => (
-                                    <td {...{
-                                        key: cell.id,
-                                        style: {
-                                            background: cell.getIsGrouped()
-                                                ? '#0aff0082'
-                                                : cell.getIsAggregated()
-                                                    ? '#ffa50078'
-                                                    : cell.getIsPlaceholder()
-                                                        ? '#ff000042'
-                                                        : 'white',
+            {props.isLoading && virtualRows.length == 0 && <>Please Wait...</>}
 
-                                            width: cell.column.getSize(),
-                                        },
-                                    }}>
-                                        {cell.getIsGrouped() ? (
-                                            // If it's a grouped cell, add an expander and row count
-                                            <>
-                                                <button
-                                                    {...{
-                                                        onClick: row.getToggleExpandedHandler(),
-                                                        style: {
-                                                            cursor: row.getCanExpand()
-                                                                ? 'pointer'
-                                                                : 'normal',
-                                                        },
-                                                    }}
-                                                >
-                                                    {row.getIsExpanded() ? '👇' : '👉'}{' '}
-                                                    {flexRender(
-                                                        cell.column.columnDef.cell,
-                                                        cell.getContext()
-                                                    )}{' '}
-                                                    ({row.subRows.length})
-                                                </button>
-                                            </>
-                                        ) : cell.getIsAggregated() ? (
-                                            // If the cell is aggregated, use the Aggregated
-                                            // renderer for cell
-                                            flexRender(
-                                                cell.column.columnDef.aggregatedCell ??
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )
-                                        ) : cell.getIsPlaceholder() ? null : ( // For cells with repeated values, render null
-                                            // Otherwise, just render the regular cell
-                                            flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )
-                                        )}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))} */}
+            {/* placeholder for virtualization */}
             {paddingBottom > 0 && (
               <tr>
                 <td style={{ height: `${paddingBottom}px` }} />
               </tr>
             )}
           </tbody>
-          <tfoot>
-            <tr>
-              <td className="p-1">
-                <IndeterminateCheckbox
-                  {...{
-                    checked: table.getIsAllPageRowsSelected(),
-                    indeterminate: table.getIsSomePageRowsSelected(),
-                    onChange: table.getToggleAllPageRowsSelectedHandler(),
-                  }}
-                />
-              </td>
-              <td colSpan={20}>
-                Page Rows ({table.getRowModel().rows.length})
-              </td>
-            </tr>
-          </tfoot>
+          {rowSelectionMode === "multiple" && (
+            <tfoot>
+              <tr>
+                <td className="p-1">
+                  <Checkbox
+                    checked={
+                      table.getIsSomePageRowsSelected()
+                        ? "mixed"
+                        : table.getIsAllPageRowsSelected()
+                    }
+                    onChange={table.getToggleAllPageRowsSelectedHandler()}
+                  />
+                </td>
+                <td colSpan={20}>
+                  {table.getIsAllPageRowsSelected() ? "Unselect" : "Select"} All
+                  Current Page Rows ({table.getRowModel().rows.length})
+                </td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
-      <div className="flex items-center gap-2">
-        <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {"<<"}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {"<"}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          {">"}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
-        >
-          {">>"}
-        </button>{" "}
-        <span className="flex items-center gap-1">
-          <span>
-            Page{" "}
-            <strong>
-              {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
-            </strong>
-          </span>
-        </span>
-        <span className="flex items-center gap-1">
-          {" "}
-          | Go to page:{" "}
-          <input
-            type="number"
-            defaultValue={table.getState().pagination.pageIndex + 1}
-            onChange={(e) => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0;
-              table.setPageIndex(page);
-            }}
-            className="border p-1 rounded w-16"
-          />
-        </span>
-        <select
-          value={table.getState().pagination.pageSize}
-          onChange={(e) => {
-            table.setPageSize(Number(e.target.value));
-          }}
-        >
-          {(props.pageSizeOptions || [10, 20, 50, 100, 1000]).map(
-            (pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                {pageSize}
-              </option>
-            )
-          )}
-        </select>
+
+      <div className={styles.paginationContainer}>
+        <Pagination table={table} pageSizeOptions={props.pageSizeOptions} />
       </div>
     </DndProvider>
   );
 }
 
-export const ForwardedAdvancedTable = React.forwardRef(AdvancedTable) as <TItem extends object>(props: TableProps<TItem> & { ref?: React.ForwardedRef<TableRef<TItem>> }) => React.ReactElement<TableProps<TItem> & { ref?: React.ForwardedRef<TableRef<TItem>> }>
+export const ForwardedAdvancedTable = React.forwardRef(AdvancedTable) as <
+  TItem extends object
+>(
+  props: TableProps<TItem> & { ref?: React.ForwardedRef<TableRef<TItem>> }
+) => React.ReactElement<
+  TableProps<TItem> & { ref?: React.ForwardedRef<TableRef<TItem>> }
+>;
 
 // A debounced input react component
 function DebouncedInput({
   value: initialValue,
   onChange,
   debounce = 500,
-  ...props
 }: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
-  const [value, setValue] = React.useState<string | number>('')
+  value: string | number;
+  onChange: (value: string | number) => void;
+  debounce?: number;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
+  const [value, setValue] = React.useState<string | number>("");
 
   React.useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
+    setValue(initialValue);
+  }, [initialValue]);
 
   React.useEffect(() => {
     const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
+      onChange(value);
+    }, debounce);
 
-    return () => clearTimeout(timeout)
-  }, [value, onChange, debounce])
-
-  return (
-    <input {...props} value={value} onChange={e => setValue(e.target.value)} />
-  )
-}
-
-function IndeterminateCheckbox({
-  indeterminate,
-  ...rest
-}: { indeterminate?: boolean } & React.HTMLProps<HTMLInputElement>) {
-  const ref = React.useRef<HTMLInputElement>(null!)
-
-  React.useEffect(() => {
-    if (typeof indeterminate === 'boolean') {
-      ref.current.indeterminate = !rest.checked && indeterminate
-    }
-  }, [ref, indeterminate, rest.checked])
+    return () => clearTimeout(timeout);
+  }, [value, onChange, debounce]);
 
   return (
-    <input
-      type="checkbox"
-      ref={ref}
-      {...rest}
+    <Input
+      placeholder="Search Keyword"
+      value={value as string}
+      onChange={(e, data) => setValue(data.value)}
+      type="search"
+      autoComplete="off"
+      contentBefore={<Search24Regular />}
+      style={{ width: "300px" }}
     />
-  )
+  );
 }
-

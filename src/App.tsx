@@ -3,6 +3,7 @@ import './App.css'
 import { ColumnDef, Table, createColumnHelper } from './lib'
 import { Person, makeData } from './data/data'
 import { TableRef } from './lib/types'
+import { Field, Radio, RadioGroup } from '@fluentui/react-components'
 
 function App() {
 
@@ -22,14 +23,19 @@ function App() {
     }),
     columnHelper.accessor('age', {
       id: 'age',
-      header: () => 'Age',
+      header: () => 'Age (Additional text for Long header)',
       cell: info => info.renderValue(),
       aggregatedCell: () => null,
+      size: 400,
+      enableGrouping: false,
     }),
     columnHelper.accessor('visits', {
       id: 'visits',
       header: () => <span>Visits</span>,
       aggregatedCell: () => null,
+      enableHiding: false,
+
+       
     }),
     columnHelper.accessor('status', {
       id: 'status',
@@ -74,9 +80,22 @@ function App() {
     console.log(selectedRow)
   }
 
+  const [selectionMode, setSelectionMode] = useState<"single" | "multiple" | undefined>("multiple")
+
   return (
     <>
       <button onClick={logSelectedRows}>Log Selected Rows</button>
+      <Field label="Selection Mode">
+        <RadioGroup
+          value={selectionMode}
+          onChange={(_, data) => setSelectionMode(data.value as unknown as "single" | "multiple")}
+          layout='horizontal'
+        >
+          <Radio value={undefined} label="None" />
+          <Radio value={"single"} label="Single" />
+          <Radio value={"multiple"} label="Multiple" />
+        </RadioGroup>
+      </Field>
       <Table
         ref={tableRef}
         data={data}
@@ -84,6 +103,8 @@ function App() {
         pageSize={100}
         pageSizeOptions={[10, 20, 100, 1000, 10000]}
         isLoading={true}
+        gridTitle={<h2>Grid Header</h2>}
+        rowSelectionMode={selectionMode}
       />
     </>
   );
