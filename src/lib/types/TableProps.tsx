@@ -36,4 +36,10 @@ export type TableProps<TItem extends object> = {
      * Row selection mode.
      */
     rowSelectionMode?: "single" | "multiple";
+
+
+    /** 
+     * Hidden columns
+     */
+    defaultHiddenColumns?: string[];
 };

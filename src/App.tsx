@@ -19,7 +19,7 @@ function App() {
       id: 'lastName',
       cell: info => <i>{info.getValue()}</i>,
       header: () => <span>Last Name</span>,
-      aggregatedCell: () => null,
+      aggregatedCell: () => null, 
     }),
     columnHelper.accessor('age', {
       id: 'age',
@@ -33,9 +33,7 @@ function App() {
       id: 'visits',
       header: () => <span>Visits</span>,
       aggregatedCell: () => null,
-      enableHiding: false,
-
-       
+      enableHiding: false,  
     }),
     columnHelper.accessor('status', {
       id: 'status',
@@ -81,15 +79,18 @@ function App() {
   }
 
   const [selectionMode, setSelectionMode] = useState<"single" | "multiple" | undefined>("multiple")
+ 
 
   return (
-    <>
+    <div>
       <button onClick={logSelectedRows}>Log Selected Rows</button>
       <Field label="Selection Mode">
         <RadioGroup
           value={selectionMode}
-          onChange={(_, data) => setSelectionMode(data.value as unknown as "single" | "multiple")}
-          layout='horizontal'
+          onChange={(_, data) =>
+            setSelectionMode(data.value as unknown as "single" | "multiple")
+          }
+          layout="horizontal"
         >
           <Radio value={undefined} label="None" />
           <Radio value={"single"} label="Single" />
@@ -105,8 +106,9 @@ function App() {
         isLoading={true}
         gridTitle={<h2>Grid Header</h2>}
         rowSelectionMode={selectionMode}
+        defaultHiddenColumns={["progress", "createdAt"]}
       />
-    </>
+    </div>
   );
 }
 

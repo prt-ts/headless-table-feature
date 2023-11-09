@@ -75,8 +75,8 @@ export const useTableStaticStyles = makeStyles({
   tHead: {
     ...shorthands.padding("0px", "0px", "0px", "0px"),
     zIndex: 1,
-    backgroundColor: tokens.colorNeutralBackground3,
-    color: tokens.colorNeutralForegroundOnBrand,
+    backgroundColor: tokens.colorPaletteAnchorBackground2,
+    color: tokens.colorNeutralForeground1,
 
     position: "sticky",
     top: 0,

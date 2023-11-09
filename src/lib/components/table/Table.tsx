@@ -6,7 +6,7 @@ import {
   ColumnFiltersState,
   ColumnOrderState,
   GroupingState,
-  Header, 
+  Header,
   RowSelectionState,
   SortingState,
   Table,
@@ -57,180 +57,6 @@ import { Pagination } from "./Pagination";
 import { ToggleGroupColumnIcon, ToggleSelectColumnIcon } from "./GridIcons";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
-
-const reorderColumn = (
-  draggedColumnId: string,
-  targetColumnId: string,
-  columnOrder: string[]
-): ColumnOrderState => {
-  columnOrder.splice(
-    columnOrder.indexOf(targetColumnId),
-    0,
-    columnOrder.splice(columnOrder.indexOf(draggedColumnId), 1)[0] as string
-  ); 
-  return [...columnOrder];
-};
-
-const DraggableColumnHeader: React.FC<{
-  header: Header<object, unknown>;
-  table: Table<object>;
-}> = ({ header, table }) => {
-  const { getState, setColumnOrder } = table;
-  const { columnOrder } = getState();
-  const { column } = header;
-
-  const [{ isOver }, dropRef] = useDrop({
-    accept: "column",
-    drop: (draggedColumn: Column<object>) => {
-      const newColumnOrder = reorderColumn(
-        draggedColumn.id,
-        column.id,
-        columnOrder
-      ); 
-      setColumnOrder(newColumnOrder);
-    }, 
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });  
-
-  const [{ isDragging }, dragRef, previewRef] = useDrag({
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-    item: () => column,
-    type: "column",
-  });
-
-  const styles = useTableStaticStyles(); 
-
-  return (
-    <th
-      colSpan={header.colSpan}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? "drag" : "pointer",
-        alignItems: "left",
-        zIndex: 99,
-        backgroundColor: isOver ? "#0000000d" : "transparent",
-        border: isOver ? "1px dashed #0000000d" : "none",
-      }}
-      className={styles.tHeadCell}
-    >
-      <div className={styles.tHeadCellContent} ref={dropRef}>
-        <div ref={previewRef}>
-          {header.isPlaceholder ? null : (
-            <Button
-              {...{
-                onClick: header.column.getToggleSortingHandler(),
-                onDoubleClick: () => {
-                  if (!header.column.getCanGroup()) return;
-                  header.column.getToggleGroupingHandler()();
-                },
-                style: {
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "left",
-                  flex: 1,
-                },
-              }}
-              ref={dragRef}
-              appearance="transparent"
-              tabIndex={-1}
-              className={styles.tHeadContentBtn}
-              icon={
-                {
-                  asc: (
-                    <strong>
-                      <SortAscIcon />
-                    </strong>
-                  ),
-                  desc: (
-                    <strong>
-                      <SortDescIcon />
-                    </strong>
-                  ),
-                }[header.column.getIsSorted() as string] ?? undefined
-              }
-              iconPosition="after"
-            >
-              {/* {header.column.getCanGroup() && (
-                <button
-                  {...{
-                    onClick: header.column.getToggleGroupingHandler(),
-                    style: {
-                      cursor: "pointer",
-                    },
-                  }}
-                >
-                  {header.column.getIsGrouped()
-                    ? `🛑(${header.column.getGroupedIndex()}) `
-                    : `👊 `}
-                </button>
-              )} */}
-
-              {flexRender(header.column.columnDef.header, header.getContext())}
-
-              {/* indicator for grouping */}
-              {header.column.getIsGrouped() && <GroupListRegular />}
-              {/* indicator for filtering */}
-              {header.column.getIsFiltered() && (
-                <strong>
-                  <Filter24Filled />
-                </strong>
-              )}
-
-              {/* {header.column.columnDef.id && header.column.getCanResize() && <button ref={dragRef}>🟰</button>} */}
-            </Button>
-          )}
-        </div>
-        <div>
-          <Menu>
-            <MenuTrigger disableButtonEnhancement>
-              <MenuButton appearance="transparent"></MenuButton>
-            </MenuTrigger>
-
-            <MenuPopover>
-              <MenuList>
-                <MenuGroup>
-                  <MenuGroupHeader>Section header</MenuGroupHeader>
-                  <MenuItem>Cut</MenuItem>
-                  <MenuItem>Paste</MenuItem>
-                  <MenuItem>Edit</MenuItem>
-                </MenuGroup>
-                {!header.column.getIsGrouped() && (
-                  <MenuItem
-                    onSelect={() => header.column.getToggleGroupingHandler()()}
-                  >
-                    Group Column
-                  </MenuItem>
-                )}
-                {header.column.getIsGrouped() && (
-                  <MenuItem
-                    onSelect={() => header.column.getToggleGroupingHandler()()}
-                  >
-                    Remove Group
-                  </MenuItem>
-                )}
-                <MenuDivider />
-              </MenuList>
-            </MenuPopover>
-          </Menu>
-        </div>
-      </div>
-      {header.column.getCanResize() && (
-        <div
-          onMouseDown={header.getResizeHandler()}
-          onTouchStart={header.getResizeHandler()}
-          className={mergeClasses(
-            styles.resizer,
-            column.getIsResizing() && styles.resizerActive
-          )}
-        />
-      )}
-    </th>
-  );
-};
 
 export function AdvancedTable<TItem extends object>(
   props: TableProps<TItem>,
@@ -293,6 +119,9 @@ export function AdvancedTable<TItem extends object>(
   const table = useReactTable<TItem>({
     columns: tableColumns,
     data,
+    initialState: {
+      
+    },
     state: {
       sorting,
       columnFilters,
@@ -301,7 +130,7 @@ export function AdvancedTable<TItem extends object>(
       expanded: true,
       rowSelection,
       columnOrder,
-      columnVisibility,
+      columnVisibility, 
     },
     columnResizeMode: "onChange",
     enableRowSelection: rowSelectionMode !== undefined,
@@ -353,6 +182,18 @@ export function AdvancedTable<TItem extends object>(
       table.setPageSize(pageSize);
     }
   }, [props.pageSize, table]);
+
+  const { defaultHiddenColumns } = props;
+  React.useEffect(() => { 
+    if (defaultHiddenColumns && table.setColumnVisibility) {
+      table.setColumnVisibility(() => {
+        return defaultHiddenColumns.reduce((acc, columnId) => {
+          acc[columnId] = false;
+          return acc;
+        }, {} as Record<string, boolean>);
+      });
+    }
+  }, [defaultHiddenColumns, table.setColumnVisibility]);
 
   useStaticStyles();
   const styles = useTableStaticStyles();
@@ -641,3 +482,182 @@ function DebouncedInput({
     />
   );
 }
+
+const reorderColumn = (
+  draggedColumnId: string,
+  targetColumnId: string,
+  columnOrder: string[]
+): ColumnOrderState => {
+  columnOrder.splice(
+    columnOrder.indexOf(targetColumnId),
+    0,
+    columnOrder.splice(columnOrder.indexOf(draggedColumnId), 1)[0] as string
+  );
+  return [...columnOrder];
+};
+
+const DraggableColumnHeader: React.FC<{
+  header: Header<object, unknown>;
+  table: Table<object>;
+}> = ({ header, table }) => {
+  const { getState, setColumnOrder } = table;
+  const { columnOrder } = getState();
+  const { column } = header;
+
+  const [{ isOver }, dropRef] = useDrop({
+    accept: "column",
+    drop: (draggedColumn: Column<object>) => {
+      const newColumnOrder = reorderColumn(
+        draggedColumn.id,
+        column.id,
+        columnOrder
+      );
+      setColumnOrder(newColumnOrder);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  });
+
+  const [{ isDragging }, dragRef, previewRef] = useDrag({
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+    item: () => column,
+    type: "column",
+  });
+
+  const styles = useTableStaticStyles();
+
+  return (
+    <th
+      colSpan={header.colSpan}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        cursor: isDragging ? "drag" : "pointer",
+        alignItems: "left",
+        zIndex: 99,
+        backgroundColor: isOver ? "#0000000d" : "transparent",
+        border: isOver ? "1px dashed #0000000d" : "none",
+      }}
+      className={styles.tHeadCell}
+    >
+      <div className={styles.tHeadCellContent} ref={dropRef}>
+        <div ref={previewRef}>
+          {header.isPlaceholder ? null : (
+            <Button
+              {...{
+                onClick: header.column.getToggleSortingHandler(),
+                onDoubleClick: () => {
+                  if (!header.column.getCanGroup()) return;
+                  header.column.getToggleGroupingHandler()();
+                },
+                style: {
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "left",
+                  flex: 1,
+                },
+              }}
+              ref={dragRef}
+              appearance="transparent"
+              tabIndex={-1}
+              className={styles.tHeadContentBtn}
+              icon={
+                {
+                  asc: (
+                    <strong>
+                      <SortAscIcon />
+                    </strong>
+                  ),
+                  desc: (
+                    <strong>
+                      <SortDescIcon />
+                    </strong>
+                  ),
+                }[header.column.getIsSorted() as string] ?? undefined
+              }
+              iconPosition="after"
+            >
+              {/* {header.column.getCanGroup() && (
+                <button
+                  {...{
+                    onClick: header.column.getToggleGroupingHandler(),
+                    style: {
+                      cursor: "pointer",
+                    },
+                  }}
+                >
+                  {header.column.getIsGrouped()
+                    ? `🛑(${header.column.getGroupedIndex()}) `
+                    : `👊 `}
+                </button>
+              )} */}
+
+              <strong>
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
+              </strong>
+
+              {/* indicator for grouping */}
+              {header.column.getIsGrouped() && <GroupListRegular />}
+              {/* indicator for filtering */}
+              {header.column.getIsFiltered() && (
+                <strong>
+                  <Filter24Filled />
+                </strong>
+              )}
+
+              {/* {header.column.columnDef.id && header.column.getCanResize() && <button ref={dragRef}>🟰</button>} */}
+            </Button>
+          )}
+        </div>
+        <div>
+          <Menu>
+            <MenuTrigger disableButtonEnhancement>
+              <MenuButton appearance="transparent"></MenuButton>
+            </MenuTrigger>
+
+            <MenuPopover>
+              <MenuList>
+                <MenuGroup>
+                  <MenuGroupHeader>Section header</MenuGroupHeader>
+                  <MenuItem>Cut</MenuItem>
+                  <MenuItem>Paste</MenuItem>
+                  <MenuItem>Edit</MenuItem>
+                </MenuGroup>
+                {!header.column.getIsGrouped() && (
+                  <MenuItem
+                    onSelect={() => header.column.getToggleGroupingHandler()()}
+                  >
+                    Group Column
+                  </MenuItem>
+                )}
+                {header.column.getIsGrouped() && (
+                  <MenuItem
+                    onSelect={() => header.column.getToggleGroupingHandler()()}
+                  >
+                    Remove Group
+                  </MenuItem>
+                )}
+                <MenuDivider />
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+        </div>
+      </div>
+      {header.column.getCanResize() && (
+        <div
+          onMouseDown={header.getResizeHandler()}
+          onTouchStart={header.getResizeHandler()}
+          className={mergeClasses(
+            styles.resizer,
+            column.getIsResizing() && styles.resizerActive
+          )}
+        />
+      )}
+    </th>
+  );
+};
