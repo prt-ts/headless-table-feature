@@ -83,6 +83,7 @@ function App() {
         columns={columns}
         pageSize={100}
         pageSizeOptions={[10, 20, 100, 1000, 10000]}
+        isLoading={true}
       />
     </>
   );

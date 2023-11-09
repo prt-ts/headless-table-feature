@@ -12,6 +12,11 @@ export type TableProps<TItem extends object> = {
     data: TItem[];
 
     /**
+     * Table loading state.
+     */
+    isLoading?: boolean;
+
+    /**
      * Table default page size.
      */
     pageSize?: number;
