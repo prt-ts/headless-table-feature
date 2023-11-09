@@ -193,7 +193,7 @@ export function AdvancedTable<TItem extends object>(
         }, {} as Record<string, boolean>);
       });
     }
-  }, [defaultHiddenColumns, table.setColumnVisibility]);
+  }, [defaultHiddenColumns, table]);
 
   useStaticStyles();
   const styles = useTableStaticStyles();
