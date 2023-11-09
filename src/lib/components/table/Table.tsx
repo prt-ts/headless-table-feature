@@ -474,7 +474,7 @@ function DebouncedInput({
     <Input
       placeholder="Search Keyword"
       value={value as string}
-      onChange={(e, data) => setValue(data.value)}
+      onChange={(_, data) => setValue(data.value)}
       type="search"
       autoComplete="off"
       contentBefore={<Search24Regular />}
@@ -542,44 +542,44 @@ const DraggableColumnHeader: React.FC<{
       }}
       className={styles.tHeadCell}
     >
-      <div className={styles.tHeadCellContent} ref={dropRef}>
-        <div ref={previewRef}>
-          {header.isPlaceholder ? null : (
-            <Button
-              {...{
-                onClick: header.column.getToggleSortingHandler(),
-                onDoubleClick: () => {
-                  if (!header.column.getCanGroup()) return;
-                  header.column.getToggleGroupingHandler()();
-                },
-                style: {
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "left",
-                  flex: 1,
-                },
-              }}
-              ref={dragRef}
-              appearance="transparent"
-              tabIndex={-1}
-              className={styles.tHeadContentBtn}
-              icon={
-                {
-                  asc: (
-                    <strong>
-                      <SortAscIcon />
-                    </strong>
-                  ),
-                  desc: (
-                    <strong>
-                      <SortDescIcon />
-                    </strong>
-                  ),
-                }[header.column.getIsSorted() as string] ?? undefined
-              }
-              iconPosition="after"
-            >
-              {/* {header.column.getCanGroup() && (
+      <div ref={dragRef}>
+        <div className={styles.tHeadCellContent} ref={dropRef}>
+          <div ref={previewRef}>
+            {header.isPlaceholder ? null : (
+              <Button
+                {...{
+                  onClick: header.column.getToggleSortingHandler(),
+                  onDoubleClick: () => {
+                    if (!header.column.getCanGroup()) return;
+                    header.column.getToggleGroupingHandler()();
+                  },
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "left",
+                    flex: 1,
+                  },
+                }}
+                appearance="transparent"
+                tabIndex={-1}
+                className={styles.tHeadContentBtn}
+                icon={
+                  {
+                    asc: (
+                      <strong>
+                        <SortAscIcon />
+                      </strong>
+                    ),
+                    desc: (
+                      <strong>
+                        <SortDescIcon />
+                      </strong>
+                    ),
+                  }[header.column.getIsSorted() as string] ?? undefined
+                }
+                iconPosition="after"
+              >
+                {/* {header.column.getCanGroup() && (
                 <button
                   {...{
                     onClick: header.column.getToggleGroupingHandler(),
@@ -594,60 +594,66 @@ const DraggableColumnHeader: React.FC<{
                 </button>
               )} */}
 
-              <strong>
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
-              </strong>
-
-              {/* indicator for grouping */}
-              {header.column.getIsGrouped() && <GroupListRegular />}
-              {/* indicator for filtering */}
-              {header.column.getIsFiltered() && (
                 <strong>
-                  <Filter24Filled />
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
                 </strong>
-              )}
 
-              {/* {header.column.columnDef.id && header.column.getCanResize() && <button ref={dragRef}>🟰</button>} */}
-            </Button>
-          )}
-        </div>
-        <div>
-          <Menu>
-            <MenuTrigger disableButtonEnhancement>
-              <MenuButton appearance="transparent"></MenuButton>
-            </MenuTrigger>
+                {/* indicator for grouping */}
+                {header.column.getIsGrouped() && <GroupListRegular />}
+                {/* indicator for filtering */}
+                {header.column.getIsFiltered() && (
+                  <strong>
+                    <Filter24Filled />
+                  </strong>
+                )}
 
-            <MenuPopover>
-              <MenuList>
-                <MenuGroup>
-                  <MenuGroupHeader>Section header</MenuGroupHeader>
-                  <MenuItem>Cut</MenuItem>
-                  <MenuItem>Paste</MenuItem>
-                  <MenuItem>Edit</MenuItem>
-                </MenuGroup>
-                {!header.column.getIsGrouped() && (
-                  <MenuItem
-                    onSelect={() => header.column.getToggleGroupingHandler()()}
-                  >
-                    Group Column
-                  </MenuItem>
-                )}
-                {header.column.getIsGrouped() && (
-                  <MenuItem
-                    onSelect={() => header.column.getToggleGroupingHandler()()}
-                  >
-                    Remove Group
-                  </MenuItem>
-                )}
-                <MenuDivider />
-              </MenuList>
-            </MenuPopover>
-          </Menu>
+                {/* {header.column.columnDef.id && header.column.getCanResize() && <button ref={dragRef}>🟰</button>} */}
+              </Button>
+            )}
+          </div>
+          <div>
+            <Menu>
+              <MenuTrigger disableButtonEnhancement>
+                <MenuButton appearance="transparent"></MenuButton>
+              </MenuTrigger>
+
+              <MenuPopover>
+                <MenuList>
+                  <MenuGroup>
+                    <MenuGroupHeader>Section header</MenuGroupHeader>
+                    <MenuItem>Cut</MenuItem>
+                    <MenuItem>Paste</MenuItem>
+                    <MenuItem>Edit</MenuItem>
+                  </MenuGroup>
+                  {!header.column.getIsGrouped() && (
+                    <MenuItem
+                      onSelect={() =>
+                        header.column.getToggleGroupingHandler()()
+                      }
+                    >
+                      Group Column
+                    </MenuItem>
+                  )}
+                  {header.column.getIsGrouped() && (
+                    <MenuItem
+                      onSelect={() =>
+                        header.column.getToggleGroupingHandler()()
+                      }
+                    >
+                      Remove Group
+                    </MenuItem>
+                  )}
+                  <MenuDivider />
+                </MenuList>
+              </MenuPopover>
+            </Menu>
+          </div>
         </div>
       </div>
+
       {header.column.getCanResize() && (
         <div
           onMouseDown={header.getResizeHandler()}
@@ -658,6 +664,7 @@ const DraggableColumnHeader: React.FC<{
           )}
         />
       )}
+      
     </th>
   );
 };
