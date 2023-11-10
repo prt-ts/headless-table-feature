@@ -5,6 +5,7 @@ import { FilterMultiSelectRadio } from "./FilterMultiSelectRadio"
 
 export const Filter = <TItem extends object>({
     column,
+    table
 }: {
     column: Column<TItem, unknown>
     table: Table<TItem>
@@ -15,15 +16,15 @@ export const Filter = <TItem extends object>({
 
         case "arrIncludesSome":
             return (
-                <FilterMultiSelectCheckbox column={column} />
+                <FilterMultiSelectCheckbox column={column} table={table}/>
             )
-        case "arrIncludesEvery":
+        case "arrIncludesAll":
             return (
-                <FilterMultiSelectRadio column={column} />
+                <FilterMultiSelectRadio column={column} table={table}/>
             )
         case "arrIncludes":
             return (
-                <FilterMultiSelectRadio column={column} />
+                <FilterMultiSelectRadio column={column} table={table}/>
             )
     }
 

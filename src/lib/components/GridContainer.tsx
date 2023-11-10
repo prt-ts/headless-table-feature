@@ -19,6 +19,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  FilterFn
 } from "@tanstack/react-table";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -45,7 +46,7 @@ import {
   ArrowSortUp20Filled,
   ArrowSortUp20Regular,
   GroupListRegular,
-  Filter24Filled,
+  FilterFilled,
 } from "@fluentui/react-icons";
 import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticStyles";
 import { Pagination } from "./pagination/Pagination";
@@ -56,6 +57,17 @@ import { NoSearchResult } from "./no-search-result";
 import { Filter } from "./filters";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
+
+const arrIncludesSome: FilterFn<unknown> = (row, columnId, value) => {
+  // Rank the item
+  const rowValue = row.getValue(columnId); 
+  const passed = Array.isArray(value) && (value.length === 0 || value.includes(`${rowValue}`)); 
+
+  // console.log("rowValue", rowValue, "value", value, "passed", passed, "columnId", columnId)
+   
+  // Return if the item should be filtered in/out
+  return passed;
+}
 
 export function AdvancedTable<TItem extends object>(
   props: TableProps<TItem>,
@@ -76,6 +88,9 @@ export function AdvancedTable<TItem extends object>(
   const table = useReactTable<TItem>({
     columns: columns,
     data, 
+    filterFns: {
+      arrIncludesSome
+    },
     state: {
       sorting,
       columnFilters,
@@ -487,7 +502,7 @@ const HeaderCell: React.FC<{
                 {/* indicator for filtering */}
                 {header.column.getIsFiltered() && (
                   <strong>
-                    <Filter24Filled />
+                    <FilterFilled />
                   </strong>
                 )}
 
@@ -503,7 +518,8 @@ const HeaderCell: React.FC<{
 
               <MenuPopover className={styles.tHeadMenuPopover}>
                 <MenuList>
-                  {header.column.getCanFilter() && (<MenuGroup>
+                  {header.column.getCanFilter() && (
+                  <MenuGroup key={"filter-group"}>
                     <MenuGroupHeader>
                       Filter by {flexRender(
                         header.column.columnDef.header,
@@ -514,7 +530,7 @@ const HeaderCell: React.FC<{
                   </MenuGroup>)}
                   <MenuDivider />
 
-                  <MenuGroup>
+                  <MenuGroup key={"grouping-group"}>
                     <MenuGroupHeader>
                       Column Actions
                     </MenuGroupHeader>
@@ -528,7 +544,7 @@ const HeaderCell: React.FC<{
                       </MenuItem>
                     )}
                     {header.column.getIsGrouped() && (
-                      <MenuItem
+                      <MenuItem 
                         onClick={() =>
                           header.column.getToggleGroupingHandler()()
                         }

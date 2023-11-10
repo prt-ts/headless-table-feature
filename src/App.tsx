@@ -10,6 +10,13 @@ function App() {
   const columnHelper = createColumnHelper<Person>()
 
   const columns = [
+    columnHelper.accessor('id', {
+      id: 'id',
+      header: () => 'ID', 
+      aggregatedCell: () => null,
+      filterFn: "arrIncludesSome", 
+      enableGrouping: false,
+    }),
     columnHelper.accessor('firstName', {
       id: 'firstName',
       header: () => 'First Name',
@@ -69,7 +76,7 @@ function App() {
           id: 'country',
           header: 'Country',
           aggregatedCell: () => null,
-          filterFn: "arrIncludes",
+          filterFn: "auto",
         }),
       ]
     }),

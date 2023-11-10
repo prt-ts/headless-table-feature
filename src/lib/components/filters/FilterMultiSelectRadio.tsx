@@ -1,17 +1,24 @@
 import { Radio, RadioGroup } from "@fluentui/react-components"
-import { Column } from "@tanstack/react-table"
+import { Column, Table } from "@tanstack/react-table"
 import * as React from "react"
 import { useVirtual } from "react-virtual"
 
 export const FilterMultiSelectRadio = <TItem extends object>({
-    column
+    column,
+    table
 }: {
-    column: Column<TItem, unknown>
+    column: Column<TItem, unknown>,
+    table: Table<TItem>
 }) => {
+    const firstValue = table
+        .getPreFilteredRowModel()
+        .flatRows[0]?.getValue(column.id)
     const columnFilterValue = column.getFilterValue() as string[] 
     const [filterOptions, setFilterOptions] = React.useState<string[]>([]);
     React.useEffect(() => {
-        const uniqueSortedOptions = Array.from(column.getFacetedUniqueValues().keys()).sort()
+        const uniqueSortedOptions = typeof firstValue === "number" || !isNaN(firstValue as number) ?
+            Array.from(column.getFacetedUniqueValues().keys()).sort((a, b) => Number(a) - Number(b))
+            : Array.from(column.getFacetedUniqueValues().keys()).sort()
         setFilterOptions(uniqueSortedOptions)
     }, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -22,7 +29,7 @@ export const FilterMultiSelectRadio = <TItem extends object>({
     const rowVirtualizer = useVirtual({
         parentRef: filterContainer,
         size: filterOptions.length,
-        overscan: 5,
+        overscan: 15,
     });
     const { virtualItems: virtualRows, totalSize } = rowVirtualizer;
 
@@ -33,7 +40,7 @@ export const FilterMultiSelectRadio = <TItem extends object>({
 
     return (
         <div ref={filterContainer} style={{ display: "flex", flexDirection: "column", maxHeight: "300px", width: "100%", overflowY: "auto" }}>
-            {paddingTop > 0 && <div style={{ height: `${paddingTop}px` }} />}
+            {paddingTop > 0 && <div style={{ paddingTop: `${paddingTop}px` }} />}
             <RadioGroup
                 layout="vertical"
                 value={(columnFilterValue?.[0]) || ""}
@@ -57,7 +64,7 @@ export const FilterMultiSelectRadio = <TItem extends object>({
                     })
                 }
             </RadioGroup>
-            {paddingBottom > 0 && <div style={{ height: `${paddingBottom}px` }}></div>}
+            {paddingBottom > 0 && <div style={{ paddingBottom: `${paddingBottom}px` }}></div>}
         </div>
     )
 } 
