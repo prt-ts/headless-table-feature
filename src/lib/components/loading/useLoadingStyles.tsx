@@ -2,8 +2,7 @@ import { makeStyles, shorthands, tokens } from "@fluentui/react-components";
 
 export const useLoadingStyles = makeStyles({
     invertedWrapper: {
-        backgroundColor: tokens.colorNeutralBackground1,
-        ...shorthands.margin("10px", "0px")
+        backgroundColor: tokens.colorNeutralBackground1, 
     },
     row: {
         alignItems: "center",
@@ -11,6 +10,6 @@ export const useLoadingStyles = makeStyles({
         paddingBottom: "10px",
         position: "relative",
         ...shorthands.gap("10px"),
-        gridTemplateColumns: "min-content 20% 15% 30% 30%",
+        gridTemplateColumns: "min-content 20% 15% 30% 28%",
     },
 });

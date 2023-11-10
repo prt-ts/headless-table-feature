@@ -62,18 +62,21 @@ function App() {
           id: 'zipCode',
           header: 'Zip Code',
           aggregatedCell: () => null,
+          enableColumnFilter: false,
         }),
         columnHelper.accessor('address.country', {
           id: 'country',
           header: 'Country',
           aggregatedCell: () => null,
+          filterFn: "arrIncludesSome",
         }),
       ]
     }),
     columnHelper.accessor('status', {
       id: 'status',
       header: 'Status',
-      aggregatedCell: () => null,
+      aggregatedCell: () => null, 
+      filterFn: "arrIncludesSome",
     }),
     columnHelper.accessor('createdAt', {
       id: 'createdAt',
@@ -95,7 +98,7 @@ function App() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setData(() => makeData(100049))
+      setData(() => makeData(10000))
       setIsLoading(false)
     }, 1000)
 

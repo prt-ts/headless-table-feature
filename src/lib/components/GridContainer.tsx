@@ -12,6 +12,8 @@ import {
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
+  getFacetedMinMaxValues,
+  getFacetedUniqueValues,
   getFilteredRowModel,
   getGroupedRowModel,
   getPaginationRowModel,
@@ -51,6 +53,7 @@ import { GridHeader } from "./grid-header";
 import { Loading } from "./loading";
 import { NoItemGrid } from "./no-item";
 import { NoSearchResult } from "./no-search-result";
+import { Filter } from "./filters";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
 
@@ -61,24 +64,18 @@ export function AdvancedTable<TItem extends object>(
   const { columns, data, rowSelectionMode } = props;
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [grouping, setGrouping] = React.useState<GroupingState>([]);
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-
+  const [columnVisibility, setColumnVisibility] = React.useState({}); 
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
     columns.map((column) => column.id as string)
   );
-
+ 
   const table = useReactTable<TItem>({
     columns: columns,
-    data,
-    initialState: {
-
-    },
+    data, 
     state: {
       sorting,
       columnFilters,
@@ -91,7 +88,11 @@ export function AdvancedTable<TItem extends object>(
     },
     columnResizeMode: "onChange",
     enableRowSelection: rowSelectionMode !== undefined,
-    enableMultiRowSelection: rowSelectionMode === "multiple",
+    enableMultiRowSelection: rowSelectionMode === "multiple", 
+    enableFilters: true,
+    enableGlobalFilter: true,
+    enableColumnFilters: true,
+    filterFromLeafRows: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -105,6 +106,8 @@ export function AdvancedTable<TItem extends object>(
     getFilteredRowModel: getFilteredRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
   });
 
   React.useImperativeHandle(
@@ -406,7 +409,7 @@ const HeaderCell: React.FC<{
   });
 
   const styles = useTableStaticStyles();
-
+ 
   return (
     <th
       colSpan={header.colSpan}
@@ -498,33 +501,43 @@ const HeaderCell: React.FC<{
                 <MenuButton appearance="transparent" aria-label="View Column Actions"></MenuButton>
               </MenuTrigger>
 
-              <MenuPopover>
+              <MenuPopover className={styles.tHeadMenuPopover}>
                 <MenuList>
-                  <MenuGroup>
-                    <MenuGroupHeader>Section header</MenuGroupHeader>
-                    <MenuItem>Cut</MenuItem>
-                    <MenuItem>Paste</MenuItem>
-                    <MenuItem>Edit</MenuItem>
-                  </MenuGroup>
-                  {!header.column.getIsGrouped() && (
-                    <MenuItem
-                      onSelect={() =>
-                        header.column.getToggleGroupingHandler()()
-                      }
-                    >
-                      Group Column
-                    </MenuItem>
-                  )}
-                  {header.column.getIsGrouped() && (
-                    <MenuItem
-                      onSelect={() =>
-                        header.column.getToggleGroupingHandler()()
-                      }
-                    >
-                      Remove Group
-                    </MenuItem>
-                  )}
+                  {header.column.getCanFilter() && (<MenuGroup>
+                    <MenuGroupHeader>
+                      Filter by {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </MenuGroupHeader>
+                    <Filter column={header.column} table={table} />
+                  </MenuGroup>)}
                   <MenuDivider />
+
+                  <MenuGroup>
+                    <MenuGroupHeader>
+                      Column Actions
+                    </MenuGroupHeader>
+                    {!header.column.getIsGrouped() && (
+                      <MenuItem
+                        onClick={() =>
+                          header.column.getToggleGroupingHandler()()
+                        }
+                      >
+                        Group Column
+                      </MenuItem>
+                    )}
+                    {header.column.getIsGrouped() && (
+                      <MenuItem
+                        onClick={() =>
+                          header.column.getToggleGroupingHandler()()
+                        }
+                      >
+                        Remove Group
+                      </MenuItem>
+                    )}
+                  </MenuGroup>
+                  
                 </MenuList>
               </MenuPopover>
             </Menu>

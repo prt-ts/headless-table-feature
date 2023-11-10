@@ -100,6 +100,11 @@ export const useTableStaticStyles = makeStyles({
     minWidth: "1rem",
   },
 
+  tHeadMenuPopover: {
+    ...shorthands.padding("0px", "0px", "0px", "0px"),
+    width: "300px",
+  },
+
   tBody: {
     ...shorthands.padding("0px", "0px", "0px", "0px"),
     zIndex: 0,
