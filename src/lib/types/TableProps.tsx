@@ -42,4 +42,16 @@ export type TableProps<TItem extends object> = {
      * Hidden columns
      */
     defaultHiddenColumns?: string[];
+
+    /**
+    * Component visible if the no item match the filter condition
+    * @default defaultNoItemComponent
+    */
+    noFilterMatchPage?: React.ReactNode;
+
+    /**
+     * Component visible in the grid body if there is no items in the list
+     * @default defaultNoItemComponent
+     */
+    noItemPage?: React.ReactNode;
 };
