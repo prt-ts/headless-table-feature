@@ -302,21 +302,22 @@ export function AdvancedTable<TItem extends object>(
                             }}
                           > */}
                           {/* {row.getIsExpanded() ? "👇" : "👉"}{" "} */}
-                          {flexRender(
+                          <strong>{flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
                           )}{" "}
-                          ({row.subRows.length})
+                            ({row.subRows.length})</strong>
                           {/* </button> */}
                         </>
                       ) : cell.getIsAggregated() ? (
                         // If the cell is aggregated, use the Aggregated
                         // renderer for cell
-                        flexRender(
+                        <strong>{flexRender(
                           cell.column.columnDef.aggregatedCell ??
                           cell.column.columnDef.cell,
                           cell.getContext()
-                        )
+                        )}
+                        </strong>
                       ) : cell.getIsPlaceholder() ? null : ( // For cells with repeated values, render null
                         // Otherwise, just render the regular cell
                         flexRender(

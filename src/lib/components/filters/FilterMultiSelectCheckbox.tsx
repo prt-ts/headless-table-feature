@@ -22,8 +22,8 @@ export const FilterMultiSelectCheckbox = <TItem extends object>({
             : Array.from(column.getFacetedUniqueValues().keys()).sort()
         setFilterOptions(uniqueSortedOptions)
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps 
-    [column.getFacetedUniqueValues()])
+        // eslint-disable-next-line react-hooks/exhaustive-deps 
+        [column.getFacetedUniqueValues()])
 
     const filterContainer = React.useRef<HTMLDivElement>(null);
     const rowVirtualizer = useVirtual({
@@ -37,7 +37,9 @@ export const FilterMultiSelectCheckbox = <TItem extends object>({
     const paddingBottom = virtualRows.length > 0
         ? totalSize - (virtualRows?.[virtualRows.length - 1]?.end || 0)
         : 0;
- 
+
+
+    const allOptionChecked = columnFilterValue?.length > 0 && columnFilterValue?.length !== filterOptions?.length ? "mixed" : columnFilterValue?.length === filterOptions?.length && filterOptions?.length > 0;
     return (
         <div
             key={"filter-multi-select-checkbox"}
@@ -45,11 +47,24 @@ export const FilterMultiSelectCheckbox = <TItem extends object>({
             style={{
                 display: "flex",
                 flexDirection: "column",
-                height: "300px",
+                maxHeight: "300px",
                 width: "100%",
                 overflow: "auto"
             }}>
             {paddingTop > 0 && <span style={{ paddingTop: `${paddingTop}px` }} ></span>}
+            <Checkbox
+                key={`toggle-all-${column.id}`}
+                checked={allOptionChecked}
+                onChange={() => {
+                    if (columnFilterValue.length > 0) {
+                        column.setFilterValue([])
+                        return;
+                    }
+                    column.setFilterValue([...filterOptions])
+                }}
+                label={"(Toggle All)"}
+
+            />
             {
                 virtualRows.map((row) => {
                     const value = `${filterOptions[row.index]}`;
