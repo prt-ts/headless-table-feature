@@ -48,6 +48,7 @@ import {
 import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticStyles";
 import { Pagination } from "./pagination/Pagination";
 import { GridHeader } from "./grid-header";
+import { Loading } from "./loading";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
 
@@ -152,6 +153,9 @@ export function AdvancedTable<TItem extends object>(
 
   const headerGroups = table.getHeaderGroups();
 
+  // utilities 
+  const isLoading = props.isLoading && virtualRows.length == 0;
+  
   useStaticStyles();
   const styles = useTableStaticStyles();
 
@@ -297,8 +301,7 @@ export function AdvancedTable<TItem extends object>(
                 </tr>
               );
             })}
-            {props.isLoading && virtualRows.length == 0 && <>Please Wait...</>}
-
+             
             {/* placeholder for virtualization */}
             {paddingBottom > 0 && (
               <tr>
@@ -306,7 +309,7 @@ export function AdvancedTable<TItem extends object>(
               </tr>
             )}
           </tbody>
-          {rowSelectionMode === "multiple" && (
+          {rowSelectionMode === "multiple" && !isLoading && (
             <tfoot>
               <tr>
                 <td className="p-1">
@@ -327,7 +330,10 @@ export function AdvancedTable<TItem extends object>(
             </tfoot>
           )}
         </table>
+        {isLoading && <Loading />}
       </div>
+
+      
 
       <Pagination table={table} pageSizeOptions={props.pageSizeOptions} />
     </DndProvider>
