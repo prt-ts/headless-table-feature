@@ -11,7 +11,7 @@ type LoadingProps = {
 }
 
 export const Loading: React.FC<LoadingProps> = (props) => {
-    const { numberOfItems = 16, numberOfColumns = 4 } = props;
+    const { numberOfItems = 16, numberOfColumns = 5 } = props;
     const styles = useLoadingStyles();
     return (<div className={styles.invertedWrapper}>
         <Skeleton>

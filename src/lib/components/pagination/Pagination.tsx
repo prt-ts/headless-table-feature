@@ -92,9 +92,13 @@ export const Pagination = <TItem extends object>(
                 value={`${table.getState().pagination.pageIndex + 1}`}
                 onChange={(e, data) => {
                   const page = data.value ? Number(e.target.value) - 1 : 0;
-                  table.setPageIndex(page);
+                  if(page >= 0 && page < table.getPageCount())
+                  {
+                    table.setPageIndex(page);
+                  } 
                 }}
                 className={styles.pageSizeInput}
+                aria-label="Page Number"
               />
             </span>
           </div>
@@ -105,6 +109,7 @@ export const Pagination = <TItem extends object>(
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
             icon={<PreviousRegular />}
+            aria-label="Go to first page"
           />
           <Button
             size="small"
@@ -113,6 +118,7 @@ export const Pagination = <TItem extends object>(
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
             icon={<ArrowPreviousFilled />}
+            aria-label="Go to previous page"
           />
           {pageSelectionOptions?.map((option, index) => (
             <Button
@@ -122,7 +128,7 @@ export const Pagination = <TItem extends object>(
               onClick={() => table.setPageIndex(option - 1)}
               aria-label={`Show Page ${option}`}
               size="small"
-              className={styles.pageBtn}
+              className={styles.pageBtn} 
             >
               {option}
             </Button>
@@ -134,6 +140,7 @@ export const Pagination = <TItem extends object>(
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
             icon={<ArrowNextFilled />}
+            aria-label="Go to next page"
           />
           <Button
             size="small"
@@ -142,6 +149,7 @@ export const Pagination = <TItem extends object>(
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
             icon={<NextRegular />}
+            aria-label="Go to last page"
           />
         </div>
       </div>

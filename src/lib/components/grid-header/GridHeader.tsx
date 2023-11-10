@@ -26,7 +26,7 @@ export const GridHeader = <TItem extends object>(props: GridHeaderProps<TItem>) 
             <div className={styles.tableTopHeaderRight}>
                 <Popover withArrow>
                     <PopoverTrigger disableButtonEnhancement>
-                        <Button icon={<ToggleGroupColumnIcon />} />
+                        <Button icon={<ToggleGroupColumnIcon />} aria-label='Toggle Group Column' />
                     </PopoverTrigger>
 
                     <PopoverSurface>
@@ -50,7 +50,7 @@ export const GridHeader = <TItem extends object>(props: GridHeaderProps<TItem>) 
                 </Popover>
                 <Popover withArrow>
                     <PopoverTrigger disableButtonEnhancement>
-                        <Button icon={<ToggleSelectColumnIcon />} />
+                        <Button icon={<ToggleSelectColumnIcon />} aria-label='Toggle Column Visibility'/>
                     </PopoverTrigger>
 
                     <PopoverSurface>

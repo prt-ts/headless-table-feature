@@ -50,6 +50,7 @@ import { Pagination } from "./pagination/Pagination";
 import { GridHeader } from "./grid-header";
 import { Loading } from "./loading";
 import { NoItemGrid } from "./no-item";
+import { NoSearchResult } from "./no-search-result";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
 
@@ -171,24 +172,26 @@ export function AdvancedTable<TItem extends object>(
       />
 
       <div ref={tableContainerRef} className={styles.tableContainer}>
-        <table className={styles.table}>
+        <table className={styles.table} aria-label="Data Grid">
           <thead className={styles.tHead}>
             {headerGroups?.map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {rowSelectionMode === "multiple" && (
-                  <td style={{ width: "1rem" }}>
-                    {headerGroup.depth === headerGroups?.length - 1 && (<Checkbox
-                      checked={
-                        table.getIsSomeRowsSelected()
-                          ? "mixed"
-                          : table.getIsAllRowsSelected()
-                      }
-                      onChange={table.getToggleAllRowsSelectedHandler()}
-                    />)}
-                  </td>
+                  <th style={{ width: "1rem" }}>
+                    {headerGroup.depth === headerGroups?.length - 1 && (
+                      <Checkbox
+                        checked={
+                          table.getIsSomeRowsSelected()
+                            ? "mixed"
+                            : table.getIsAllRowsSelected()
+                        }
+                        onChange={table.getToggleAllRowsSelectedHandler()}
+                        aria-label="Select All Rows"
+                      />)}
+                  </th>
                 )}
                 {rowSelectionMode === "single" && (
-                  <td style={{ width: "1rem" }}> </td>
+                  <th style={{ width: "1rem" }}> </th>
                 )}
                 {headerGroup.headers.map((header) => {
                   return (
@@ -206,7 +209,7 @@ export function AdvancedTable<TItem extends object>(
           <tbody className={styles.tBody}>
             {/* placeholder for virtualization */}
             {paddingTop > 0 && (
-              <tr className={styles.tBodyRow}>
+              <tr className={styles.tBodyRow} aria-hidden={true}>
                 <td style={{ height: `${paddingTop}px` }} />
               </tr>
             )}
@@ -216,7 +219,7 @@ export function AdvancedTable<TItem extends object>(
                 <tr
                   key={row.id}
                   className={
-                    row.getIsSelected()
+                    row.getIsSelected() || row.getIsAllSubRowsSelected()
                       ? styles.tBodySelectedRow
                       : styles.tBodyRow
                   }
@@ -232,6 +235,7 @@ export function AdvancedTable<TItem extends object>(
                         }
                         disabled={!row.getCanSelect()}
                         onChange={row.getToggleSelectedHandler()}
+                        aria-label="Select Row"
                       />
                     </td>
                   )}
@@ -241,6 +245,7 @@ export function AdvancedTable<TItem extends object>(
                         checked={row.getIsSelected()}
                         disabled={!row.getCanSelect()}
                         onChange={row.getToggleSelectedHandler()}
+                        aria-label="Select Row"
                       />
                     </td>
                   )}
@@ -261,6 +266,7 @@ export function AdvancedTable<TItem extends object>(
                         },
                       }}
                       className={styles.tBodyCell}
+                      // rowSpan={cell.getIsGrouped() ? row.subRows.length : undefined}
                     >
                       {cell.getIsGrouped() ? (
                         // If it's a grouped cell, add an expander and row count
@@ -306,7 +312,7 @@ export function AdvancedTable<TItem extends object>(
 
             {/* placeholder for virtualization */}
             {paddingBottom > 0 && (
-              <tr>
+              <tr className={styles.tBodyRow} aria-hidden={true}>
                 <td style={{ height: `${paddingBottom}px` }} />
               </tr>
             )}
@@ -322,6 +328,7 @@ export function AdvancedTable<TItem extends object>(
                         : table.getIsAllPageRowsSelected()
                     }
                     onChange={table.getToggleAllPageRowsSelectedHandler()}
+                    aria-label="Select All Current Page Rows"
                   />
                 </td>
                 <td colSpan={20}>
@@ -334,7 +341,7 @@ export function AdvancedTable<TItem extends object>(
         </table>
         {isLoading && <Loading />}
         {noItems && <NoItemGrid message={props.noItemPage} />}
-        {noSearchResult && <NoItemGrid message={props.noFilterMatchPage} />}
+        {noSearchResult && <NoSearchResult message={props.noFilterMatchPage} />}
       </div>
 
 
@@ -488,7 +495,7 @@ const HeaderCell: React.FC<{
           {!header.isPlaceholder && !hideMenu && (<div>
             <Menu>
               <MenuTrigger disableButtonEnhancement>
-                <MenuButton appearance="transparent"></MenuButton>
+                <MenuButton appearance="transparent" aria-label="View Column Actions"></MenuButton>
               </MenuTrigger>
 
               <MenuPopover>

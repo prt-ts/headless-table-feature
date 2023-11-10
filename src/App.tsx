@@ -95,7 +95,7 @@ function App() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setData(() => makeData(100000))
+      setData(() => makeData(100049))
       setIsLoading(false)
     }, 1000)
 
@@ -122,7 +122,7 @@ function App() {
           onChange={(_, data) =>
             setSelectionMode(data.value as unknown as "single" | "multiple")
           }
-          layout="horizontal"
+          layout="horizontal" 
         >
           <Radio value={undefined} label="None" />
           <Radio value={"single"} label="Single" />
@@ -136,11 +136,11 @@ function App() {
         pageSize={100}
         pageSizeOptions={[10, 20, 100, 1000, 10000]}
         isLoading={isLoading}
-        gridTitle={<h2>Grid Header</h2>}
+        gridTitle={<strong>Grid Header</strong>}
         rowSelectionMode={selectionMode}
         defaultHiddenColumns={["progress", "createdAt"]}
-        noItemPage={<div>No Item</div>}
-        noFilterMatchPage={<div>No Filter Match</div>}
+        // noItemPage={<div>No Item</div>}
+        // noFilterMatchPage={<div>No Filter Match</div>}
       />
     </div>
   );
