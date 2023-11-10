@@ -3,7 +3,11 @@ import './App.css'
 import { ColumnDef, Table, createColumnHelper } from './lib'
 import { Person, makeData } from './data/data'
 import { TableRef } from './lib/types'
-import { Field, Radio, RadioGroup } from '@fluentui/react-components'
+import { Button, Field, Radio, RadioGroup } from '@fluentui/react-components'
+import {
+  EditRegular,
+  DeleteRegular,
+} from "@fluentui/react-icons";
 
 function App() {
 
@@ -12,9 +16,15 @@ function App() {
   const columns = [
     columnHelper.accessor('id', {
       id: 'id',
-      header: () => 'ID', 
+      header: () => 'ID',
+      cell: ({ row }) => {
+        return <div style={{ display: "flex" }}>
+          {row.getValue("id")}
+          <TableAction />
+        </div>
+      },
       aggregatedCell: () => null,
-      filterFn: "arrIncludesSome", 
+      filterFn: "arrIncludesSome",
       enableGrouping: false,
     }),
     columnHelper.accessor('firstName', {
@@ -26,21 +36,21 @@ function App() {
       id: 'lastName',
       cell: info => <i>{info.getValue()}</i>,
       header: () => <span>Last Name</span>,
-      aggregatedCell: () => null, 
+      aggregatedCell: () => null,
     }),
     columnHelper.accessor('age', {
       id: 'age',
       header: () => 'Age (Additional text for Long header)',
-      cell: info => info.renderValue(), 
+      cell: info => info.renderValue(),
       aggregationFn: "mean",
       size: 400,
       enableGrouping: false,
     }),
     columnHelper.accessor('visits', {
       id: 'visits',
-      header: () => <span>Visits</span>, 
-      enableHiding: false,  
-    }), 
+      header: () => <span>Visits</span>,
+      enableHiding: false,
+    }),
     columnHelper.accessor('progress', {
       id: 'progress',
       header: 'Profile Progress',
@@ -49,7 +59,7 @@ function App() {
     columnHelper.group({
       id: 'address',
       header: 'Address',
-      columns : [
+      columns: [
         columnHelper.accessor('address.street', {
           id: 'street',
           header: 'Street',
@@ -80,24 +90,30 @@ function App() {
         }),
       ]
     }),
-    columnHelper.accessor('status', {
-      id: 'status',
-      header: 'Status',
-      aggregatedCell: () => null, 
-      filterFn: "arrIncludesSome",
-    }),
-    columnHelper.accessor('createdAt', {
-      id: 'createdAt',
-      header: 'Created At',
-      cell: info => info.renderValue() ? new Date(info.renderValue() as Date)?.toLocaleDateString() : "",
-      aggregatedCell: () => null,
-      filterFn: (row, filterValue) => {
-        const value = row.getValue("createdAt") as string;
-        console.log(value)
-        if (!value) return false;
-        return value ? new Date(value as string)?.toLocaleDateString().includes(filterValue as string) : false
-      },
-      enableColumnFilter: false,
+    columnHelper.group({
+      id: 'additionalInfo',
+      header: 'Additional Info',
+      columns: [
+        columnHelper.accessor('status', {
+          id: 'status',
+          header: 'Status',
+          aggregatedCell: () => null,
+          filterFn: "arrIncludesSome",
+        }),
+        columnHelper.accessor('createdAt', {
+          id: 'createdAt',
+          header: 'Created At',
+          cell: info => info.renderValue() ? new Date(info.renderValue() as Date)?.toLocaleDateString() : "",
+          aggregatedCell: () => null,
+          filterFn: (row, filterValue) => {
+            const value = row.getValue("createdAt") as string;
+            console.log(value)
+            if (!value) return false;
+            return value ? new Date(value as string)?.toLocaleDateString().includes(filterValue as string) : false
+          },
+          enableColumnFilter: false,
+        }),
+      ]
     }),
   ] as ColumnDef<Person>[]
 
@@ -122,7 +138,7 @@ function App() {
   }
 
   const [selectionMode, setSelectionMode] = useState<"single" | "multiple" | undefined>("multiple")
- 
+
 
   return (
     <div>
@@ -133,7 +149,7 @@ function App() {
           onChange={(_, data) =>
             setSelectionMode(data.value as unknown as "single" | "multiple")
           }
-          layout="horizontal" 
+          layout="horizontal"
         >
           <Radio value={undefined} label="None" />
           <Radio value={"single"} label="Single" />
@@ -149,12 +165,21 @@ function App() {
         isLoading={isLoading}
         gridTitle={<strong>Grid Header</strong>}
         rowSelectionMode={selectionMode}
-        defaultHiddenColumns={["progress", "createdAt"]}
-        // noItemPage={<div>No Item</div>}
-        // noFilterMatchPage={<div>No Filter Match</div>}
+        defaultHiddenColumns={["progress"]}
+      // noItemPage={<div>No Item</div>}
+      // noFilterMatchPage={<div>No Filter Match</div>}
       />
     </div>
   );
 }
 
 export default App
+
+export const TableAction = () => {
+
+
+  return (
+    <><Button icon={<EditRegular />} aria-label="Edit" />
+      <Button icon={<DeleteRegular />} aria-label="Delete" /></>
+  );
+};

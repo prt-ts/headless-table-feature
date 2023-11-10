@@ -218,6 +218,8 @@ export function AdvancedTable<TItem extends object>(
                       header={header as unknown as Header<object, unknown>}
                       table={table as unknown as Table<object>}
                       hideMenu={headerGroup.depth !== headerGroups?.length - 1}
+                      headerDepth={headerGroup.depth}
+                      totalNumberOfHeaderDepth={headerGroups?.length - 1}
                     />
                   );
                 })}
@@ -395,7 +397,9 @@ const HeaderCell: React.FC<{
   header: Header<object, unknown>;
   table: Table<object>;
   hideMenu?: boolean;
-}> = ({ header, table, hideMenu }) => {
+  headerDepth: number;
+  totalNumberOfHeaderDepth: number;
+}> = ({ header, table, hideMenu, headerDepth, totalNumberOfHeaderDepth }) => {
   const { getState, setColumnOrder } = table;
   const { columnOrder } = getState();
   const { column } = header;
@@ -431,7 +435,7 @@ const HeaderCell: React.FC<{
       style={{
         opacity: isDragging ? 0.5 : 1,
         cursor: isDragging ? "drag" : "pointer",
-        alignItems: "left",
+        alignItems: headerDepth === totalNumberOfHeaderDepth ? "left" : "center",
         zIndex: 99,
         backgroundColor: isOver ? "#0000000d" : "transparent",
         border: isOver ? "1px dashed #0000000d" : "none",
@@ -456,8 +460,7 @@ const HeaderCell: React.FC<{
                     flex: 1,
                   },
                 }}
-                appearance="transparent"
-                tabIndex={-1}
+                appearance="transparent" 
                 className={styles.tHeadContentBtn}
                 icon={
                   {
