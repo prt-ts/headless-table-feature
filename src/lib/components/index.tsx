@@ -1,1 +1,1 @@
-export { Table } from "./table";
+export { ForwardedAdvancedTable as Table } from "./GridContainer";

@@ -7,33 +7,6 @@ export const useStaticStyles = makeStaticStyles({
 });
 
 export const useTableStaticStyles = makeStyles({
-  tableTopHeaderContainer: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    width: "100%",
-    backgroundColor: tokens.colorBrandBackground2Hover,
-    ...shorthands.padding("5px"),
-  },
-
-  tableTopHeaderLeft: {
-    display: "flex",
-    justifyContent: "flex-start",
-  },
-
-  tableTopHeaderRight: {
-    display: "flex",
-    justifyContent: "flex-end",
-  },
-
-  tableTopHeaderColumnTogglePopover: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    width: "100%",
-    height: "100%",
-  },
 
   tableContainer: {
     height: "600px",
@@ -86,16 +59,22 @@ export const useTableStaticStyles = makeStyles({
 
   tHeadRow: {
     ...shorthands.padding("0px", "0px", "0px", "0px"),
+    ...shorthands.borderBottom(
+      tokens.strokeWidthThickest,
+      "solid",
+      tokens.colorNeutralStroke1
+    ),
   },
 
   tHeadCell: {
     position: "relative",
     fontSize: tokens.fontSizeBase300,
     fontWeight: tokens.fontWeightBold,
-    minWidth: "1rem",
+    minWidth: "1rem", 
     ...shorthands.padding("2px", "4px"),
     ...shorthands.borderLeft("1px", "solid", tokens.colorNeutralStroke1),
     ...shorthands.borderRight("1px", "solid", tokens.colorNeutralStroke1),
+    ...shorthands.borderBottom("1px", "solid", tokens.colorNeutralStroke1),
   },
 
   tHeadCellContent: {
@@ -171,13 +150,7 @@ export const useTableStaticStyles = makeStyles({
     minHeight: "35px",
     height: "35px",
   },
-
-  paginationContainer: {
-    width: "100%",
-    backgroundColor: tokens.colorNeutralBackground2Hover,
-    ...shorthands.padding("5px"),
-  },
-
+  
   resizer: {
     ...shorthands.borderRight("1px", "solid", tokens.colorNeutralBackground5),
 

@@ -1,6 +1,12 @@
-import { makeStyles } from "@fluentui/react-components";
+import { makeStyles, shorthands, tokens } from "@fluentui/react-components";
 
 export const usePaginationStyle = makeStyles({
+  paginationContainer: {
+    width: "100%",
+    backgroundColor: tokens.colorNeutralBackground2Hover,
+    ...shorthands.padding("5px"),
+  },
+  
   wrapper: {
     columnGap: "0.2rem",
     display: "flex",

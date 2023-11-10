@@ -8,7 +8,15 @@ export type Person = {
   visits: number
   progress: number
   status: 'relationship' | 'complicated' | 'single'
-  createdAt: Date
+  createdAt: Date,
+
+  address: {
+    street: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string,
+  }
 }
 
 const range = (len: number) => {
@@ -33,6 +41,14 @@ const newPerson = (index: number): Person => {
       'complicated',
       'single',
     ])[0],
+
+    address : { 
+      street: faker.location.streetAddress(),
+      city: faker.location.city(),
+      state: faker.location.state(),
+      zipCode: faker.location.zipCode(),
+      country: faker.location.country(),
+    }
   };
 };
 

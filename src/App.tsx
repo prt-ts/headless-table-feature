@@ -24,25 +24,55 @@ function App() {
     columnHelper.accessor('age', {
       id: 'age',
       header: () => 'Age (Additional text for Long header)',
-      cell: info => info.renderValue(),
-      aggregatedCell: () => null,
+      cell: info => info.renderValue(), 
+      aggregationFn: "mean",
       size: 400,
       enableGrouping: false,
     }),
     columnHelper.accessor('visits', {
       id: 'visits',
-      header: () => <span>Visits</span>,
-      aggregatedCell: () => null,
+      header: () => <span>Visits</span>, 
       enableHiding: false,  
+    }), 
+    columnHelper.accessor('progress', {
+      id: 'progress',
+      header: 'Profile Progress',
+      aggregatedCell: () => null,
+    }),
+    columnHelper.group({
+      id: 'address',
+      header: 'Address',
+      columns : [
+        columnHelper.accessor('address.street', {
+          id: 'street',
+          header: 'Street',
+          aggregatedCell: () => null,
+        }),
+        columnHelper.accessor('address.city', {
+          id: 'city',
+          header: 'City',
+          aggregatedCell: () => null,
+        }),
+        columnHelper.accessor('address.state', {
+          id: 'state',
+          header: 'State',
+          aggregatedCell: () => null,
+        }),
+        columnHelper.accessor('address.zipCode', {
+          id: 'zipCode',
+          header: 'Zip Code',
+          aggregatedCell: () => null,
+        }),
+        columnHelper.accessor('address.country', {
+          id: 'country',
+          header: 'Country',
+          aggregatedCell: () => null,
+        }),
+      ]
     }),
     columnHelper.accessor('status', {
       id: 'status',
       header: 'Status',
-      aggregatedCell: () => null,
-    }),
-    columnHelper.accessor('progress', {
-      id: 'progress',
-      header: 'Profile Progress',
       aggregatedCell: () => null,
     }),
     columnHelper.accessor('createdAt', {

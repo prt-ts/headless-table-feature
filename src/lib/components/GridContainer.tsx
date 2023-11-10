@@ -1,8 +1,7 @@
 import * as React from "react";
-import { TableProps, TableRef } from "../../types";
+import { TableProps, TableRef } from "../types";
 import {
   Column,
-  ColumnDef,
   ColumnFiltersState,
   ColumnOrderState,
   GroupingState,
@@ -25,8 +24,6 @@ import { useVirtual } from "react-virtual";
 import {
   Button,
   Checkbox,
-  Divider,
-  Input,
   Menu,
   MenuButton,
   MenuDivider,
@@ -36,9 +33,6 @@ import {
   MenuList,
   MenuPopover,
   MenuTrigger,
-  Popover,
-  PopoverSurface,
-  PopoverTrigger,
   Radio,
   mergeClasses,
 } from "@fluentui/react-components";
@@ -50,11 +44,10 @@ import {
   ArrowSortUp20Regular,
   GroupListRegular,
   Filter24Filled,
-  Search24Regular,
 } from "@fluentui/react-icons";
-import { useStaticStyles, useTableStaticStyles } from "./useTableStaticStyles";
-import { Pagination } from "./Pagination";
-import { ToggleGroupColumnIcon, ToggleSelectColumnIcon } from "./GridIcons";
+import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticStyles";
+import { Pagination } from "./pagination/Pagination";
+import { GridHeader } from "./grid-header";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
 
@@ -73,54 +66,16 @@ export function AdvancedTable<TItem extends object>(
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = React.useState({});
 
-  const tableColumns: ColumnDef<TItem>[] = React.useMemo(() => {
-    return columns;
-    // return [
-    //   {
-    //     id: "select",
-    //     size: 10,
-    //     header: ({ table }) => (
-    //       <Checkbox
-    //         checked={
-    //           table.getIsSomeRowsSelected()
-    //             ? "mixed"
-    //             : table.getIsAllRowsSelected()
-    //         }
-    //         onChange={table.getToggleAllRowsSelectedHandler()}
-    //       />
-    //     ),
-    //     cell: ({ row }) => (
-    //       <Checkbox
-    //         checked={row.getIsSelected()}
-    //         disabled={!row.getCanSelect()}
-    //         onChange={row.getToggleSelectedHandler()}
-    //       />
-    //     ),
-    //     aggregatedCell: () => null,
-    //     enableColumnFilter: false,
-    //     enableGlobalFilter: false,
-    //     enableGrouping: false,
-    //     enableSorting: false,
-    //     enableResizing: false,
-    //     enableReorder: false,
-    //     enableHiding: false,
-    //     enablePinning: false,
-    //     enableMultiSort: false,
-    //   },
-    //   ...columns,
-    // ];
-  }, [columns]);
-
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
-    tableColumns.map((column) => column.id as string)
+    columns.map((column) => column.id as string)
     //must start out with populated columnOrder so we can splice
   );
 
   const table = useReactTable<TItem>({
-    columns: tableColumns,
+    columns: columns,
     data,
     initialState: {
-      
+
     },
     state: {
       sorting,
@@ -130,7 +85,7 @@ export function AdvancedTable<TItem extends object>(
       expanded: true,
       rowSelection,
       columnOrder,
-      columnVisibility, 
+      columnVisibility,
     },
     columnResizeMode: "onChange",
     enableRowSelection: rowSelectionMode !== undefined,
@@ -184,7 +139,7 @@ export function AdvancedTable<TItem extends object>(
   }, [props.pageSize, table]);
 
   const { defaultHiddenColumns } = props;
-  React.useEffect(() => { 
+  React.useEffect(() => {
     if (defaultHiddenColumns && table.setColumnVisibility) {
       table.setColumnVisibility(() => {
         return defaultHiddenColumns.reduce((acc, columnId) => {
@@ -195,93 +150,35 @@ export function AdvancedTable<TItem extends object>(
     }
   }, [defaultHiddenColumns, table]);
 
+  const headerGroups = table.getHeaderGroups();
+
   useStaticStyles();
   const styles = useTableStaticStyles();
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={styles.tableTopHeaderContainer}>
-        <div className={styles.tableTopHeaderLeft}>{props.gridTitle}</div>
-        <div className={styles.tableTopHeaderRight}>
-          <Popover withArrow>
-            <PopoverTrigger disableButtonEnhancement>
-              <Button icon={<ToggleGroupColumnIcon />} />
-            </PopoverTrigger>
-
-            <PopoverSurface>
-              <div className={styles.tableTopHeaderColumnTogglePopover}>
-                <MenuGroupHeader>Group Columns</MenuGroupHeader>
-                {table.getAllLeafColumns().map((column) => {
-                  if (column.id === "select") return null;
-                  if (column.id === "id") return null;
-                  return (
-                    <Checkbox
-                      key={column.id}
-                      checked={column.getIsGrouped()}
-                      onChange={column.getToggleGroupingHandler()}
-                      disabled={!column.getCanGroup()}
-                      label={column.id}
-                    />
-                  );
-                })}
-              </div>
-            </PopoverSurface>
-          </Popover>
-          <Popover withArrow>
-            <PopoverTrigger disableButtonEnhancement>
-              <Button icon={<ToggleSelectColumnIcon />} />
-            </PopoverTrigger>
-
-            <PopoverSurface>
-              <div className={styles.tableTopHeaderColumnTogglePopover}>
-                <MenuGroupHeader>Toggle Columns</MenuGroupHeader>
-                <Checkbox
-                  checked={table.getIsAllColumnsVisible()}
-                  onChange={table.getToggleAllColumnsVisibilityHandler()}
-                  label={"Toggle All"}
-                />
-                <Divider />
-                {table.getAllLeafColumns().map((column) => {
-                  if (column.id === "select") return null;
-                  if (column.id === "id") return null;
-
-                  return (
-                    <Checkbox
-                      key={column.id}
-                      checked={column.getIsVisible()}
-                      onChange={column.getToggleVisibilityHandler()}
-                      label={column.id}
-                      disabled={!column.getCanHide()}
-                    />
-                  );
-                })}
-              </div>
-            </PopoverSurface>
-          </Popover>
-          <DebouncedInput
-            value={globalFilter ?? ""}
-            onChange={(value) => setGlobalFilter(String(value))}
-            className="p-2 font-lg shadow border border-block"
-            placeholder="Search all columns..."
-          />
-        </div>
-      </div>
+      <GridHeader
+        table={table}
+        gridTitle={props.gridTitle}
+        globalFilter={globalFilter}
+        setGlobalFilter={setGlobalFilter}
+      />
 
       <div ref={tableContainerRef} className={styles.tableContainer}>
         <table className={styles.table}>
           <thead className={styles.tHead}>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {headerGroups?.map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {rowSelectionMode === "multiple" && (
                   <td style={{ width: "1rem" }}>
-                    <Checkbox
+                    {headerGroup.depth === headerGroups?.length - 1 && (<Checkbox
                       checked={
                         table.getIsSomeRowsSelected()
                           ? "mixed"
                           : table.getIsAllRowsSelected()
                       }
                       onChange={table.getToggleAllRowsSelectedHandler()}
-                    />
+                    />)}
                   </td>
                 )}
                 {rowSelectionMode === "single" && (
@@ -289,10 +186,11 @@ export function AdvancedTable<TItem extends object>(
                 )}
                 {headerGroup.headers.map((header) => {
                   return (
-                    <DraggableColumnHeader
+                    <HeaderCell
                       key={header.id}
                       header={header as unknown as Header<object, unknown>}
                       table={table as unknown as Table<object>}
+                      hideMenu={headerGroup.depth !== headerGroups?.length - 1}
                     />
                   );
                 })}
@@ -324,7 +222,7 @@ export function AdvancedTable<TItem extends object>(
                           row.getIsSomeSelected()
                             ? "mixed"
                             : row.getIsSelected() ||
-                              row.getIsAllSubRowsSelected()
+                            row.getIsAllSubRowsSelected()
                         }
                         disabled={!row.getCanSelect()}
                         onChange={row.getToggleSelectedHandler()}
@@ -361,7 +259,7 @@ export function AdvancedTable<TItem extends object>(
                       {cell.getIsGrouped() ? (
                         // If it's a grouped cell, add an expander and row count
                         <>
-                          <button
+                          {/* <button
                             {...{
                               onClick: row.getToggleExpandedHandler(),
                               style: {
@@ -370,21 +268,21 @@ export function AdvancedTable<TItem extends object>(
                                   : "normal",
                               },
                             }}
-                          >
-                            {row.getIsExpanded() ? "👇" : "👉"}{" "}
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}{" "}
-                            ({row.subRows.length})
-                          </button>
+                          > */}
+                          {/* {row.getIsExpanded() ? "👇" : "👉"}{" "} */}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}{" "}
+                          ({row.subRows.length})
+                          {/* </button> */}
                         </>
                       ) : cell.getIsAggregated() ? (
                         // If the cell is aggregated, use the Aggregated
                         // renderer for cell
                         flexRender(
                           cell.column.columnDef.aggregatedCell ??
-                            cell.column.columnDef.cell,
+                          cell.column.columnDef.cell,
                           cell.getContext()
                         )
                       ) : cell.getIsPlaceholder() ? null : ( // For cells with repeated values, render null
@@ -431,9 +329,7 @@ export function AdvancedTable<TItem extends object>(
         </table>
       </div>
 
-      <div className={styles.paginationContainer}>
-        <Pagination table={table} pageSizeOptions={props.pageSizeOptions} />
-      </div>
+      <Pagination table={table} pageSizeOptions={props.pageSizeOptions} />
     </DndProvider>
   );
 }
@@ -446,42 +342,6 @@ export const ForwardedAdvancedTable = React.forwardRef(AdvancedTable) as <
   TableProps<TItem> & { ref?: React.ForwardedRef<TableRef<TItem>> }
 >;
 
-// A debounced input react component
-function DebouncedInput({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-}: {
-  value: string | number;
-  onChange: (value: string | number) => void;
-  debounce?: number;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
-  const [value, setValue] = React.useState<string | number>("");
-
-  React.useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
-
-  React.useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value);
-    }, debounce);
-
-    return () => clearTimeout(timeout);
-  }, [value, onChange, debounce]);
-
-  return (
-    <Input
-      placeholder="Search Keyword"
-      value={value as string}
-      onChange={(_, data) => setValue(data.value)}
-      type="search"
-      autoComplete="off"
-      contentBefore={<Search24Regular />}
-      style={{ width: "300px" }}
-    />
-  );
-}
 
 const reorderColumn = (
   draggedColumnId: string,
@@ -496,10 +356,11 @@ const reorderColumn = (
   return [...columnOrder];
 };
 
-const DraggableColumnHeader: React.FC<{
+const HeaderCell: React.FC<{
   header: Header<object, unknown>;
   table: Table<object>;
-}> = ({ header, table }) => {
+  hideMenu?: boolean;
+}> = ({ header, table, hideMenu }) => {
   const { getState, setColumnOrder } = table;
   const { columnOrder } = getState();
   const { column } = header;
@@ -614,7 +475,7 @@ const DraggableColumnHeader: React.FC<{
               </Button>
             )}
           </div>
-          <div>
+          {!header.isPlaceholder && !hideMenu && (<div>
             <Menu>
               <MenuTrigger disableButtonEnhancement>
                 <MenuButton appearance="transparent"></MenuButton>
@@ -650,7 +511,7 @@ const DraggableColumnHeader: React.FC<{
                 </MenuList>
               </MenuPopover>
             </Menu>
-          </div>
+          </div>)}
         </div>
       </div>
 
@@ -664,7 +525,7 @@ const DraggableColumnHeader: React.FC<{
           )}
         />
       )}
-      
+
     </th>
   );
 };
