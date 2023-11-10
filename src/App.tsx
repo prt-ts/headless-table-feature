@@ -57,6 +57,7 @@ function App() {
           id: 'state',
           header: 'State',
           aggregatedCell: () => null,
+          filterFn: "arrIncludesSome",
         }),
         columnHelper.accessor('address.zipCode', {
           id: 'zipCode',
@@ -68,7 +69,7 @@ function App() {
           id: 'country',
           header: 'Country',
           aggregatedCell: () => null,
-          filterFn: "arrIncludesSome",
+          filterFn: "arrIncludes",
         }),
       ]
     }),
