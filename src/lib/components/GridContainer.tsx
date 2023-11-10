@@ -49,6 +49,7 @@ import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticSty
 import { Pagination } from "./pagination/Pagination";
 import { GridHeader } from "./grid-header";
 import { Loading } from "./loading";
+import { NoItemGrid } from "./no-item";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
 
@@ -69,7 +70,6 @@ export function AdvancedTable<TItem extends object>(
 
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
     columns.map((column) => column.id as string)
-    //must start out with populated columnOrder so we can splice
   );
 
   const table = useReactTable<TItem>({
@@ -155,7 +155,9 @@ export function AdvancedTable<TItem extends object>(
 
   // utilities 
   const isLoading = props.isLoading && virtualRows.length == 0;
-  
+  const noItems = !isLoading && props.data?.length == 0;
+  const noSearchResult = !isLoading && props.data?.length > 0 && virtualRows.length == 0;
+
   useStaticStyles();
   const styles = useTableStaticStyles();
 
@@ -301,7 +303,7 @@ export function AdvancedTable<TItem extends object>(
                 </tr>
               );
             })}
-             
+
             {/* placeholder for virtualization */}
             {paddingBottom > 0 && (
               <tr>
@@ -309,7 +311,7 @@ export function AdvancedTable<TItem extends object>(
               </tr>
             )}
           </tbody>
-          {rowSelectionMode === "multiple" && !isLoading && (
+          {rowSelectionMode === "multiple" && !isLoading && !noItems && !noSearchResult && (
             <tfoot>
               <tr>
                 <td className="p-1">
@@ -331,9 +333,11 @@ export function AdvancedTable<TItem extends object>(
           )}
         </table>
         {isLoading && <Loading />}
+        {noItems && <NoItemGrid message={props.noItemPage} />}
+        {noSearchResult && <NoItemGrid message={props.noFilterMatchPage} />}
       </div>
 
-      
+
 
       <Pagination table={table} pageSizeOptions={props.pageSizeOptions} />
     </DndProvider>

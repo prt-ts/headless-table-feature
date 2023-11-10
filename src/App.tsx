@@ -90,11 +90,13 @@ function App() {
     }),
   ] as ColumnDef<Person>[]
 
-  const [data, setData] = useState<Person[]>([])
+  const [data, setData] = useState<Person[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setData(() => makeData(100000))
+      setIsLoading(false)
     }, 1000)
 
     return () => clearTimeout(timeout)
@@ -133,10 +135,12 @@ function App() {
         columns={columns}
         pageSize={100}
         pageSizeOptions={[10, 20, 100, 1000, 10000]}
-        isLoading={true}
+        isLoading={isLoading}
         gridTitle={<h2>Grid Header</h2>}
         rowSelectionMode={selectionMode}
         defaultHiddenColumns={["progress", "createdAt"]}
+        noItemPage={<div>No Item</div>}
+        noFilterMatchPage={<div>No Filter Match</div>}
       />
     </div>
   );
