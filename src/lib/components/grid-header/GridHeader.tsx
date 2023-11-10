@@ -1,8 +1,9 @@
-import { Popover, PopoverTrigger, Button, PopoverSurface, MenuGroupHeader, Checkbox, Divider, Input } from '@fluentui/react-components';
+import { Popover, PopoverTrigger, Button, PopoverSurface, MenuGroupHeader, Checkbox, Divider, Input, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem } from '@fluentui/react-components';
 import * as React from 'react';
-import { ToggleGroupColumnIcon, ToggleSelectColumnIcon } from '../icon-components/GridIcons';
+import { ClearFilterIcon, ToggleGroupColumnIcon, ToggleSelectColumnIcon } from '../icon-components/GridIcons';
 import { useGridHeaderStyles } from './useGridHeaderStyles';
 import { Table } from '@tanstack/react-table';
+import { FilterFilled } from '@fluentui/react-icons';
 import {
     Search24Regular,
   } from "@fluentui/react-icons";
@@ -18,7 +19,12 @@ export const GridHeader = <TItem extends object>(props: GridHeaderProps<TItem>) 
     const { table, gridTitle, globalFilter, setGlobalFilter } = props; 
     const styles = useGridHeaderStyles(); 
 
-    const allLeafColumns = table.getAllLeafColumns() || []; 
+    const allLeafColumns = table.getAllLeafColumns() || [];
+    
+    const resetAllFilters = () => {
+        table.setGlobalFilter(""); 
+        table.resetColumnFilters();
+    };
 
     return (
         <div className={styles.tableTopHeaderContainer}>
@@ -84,6 +90,7 @@ export const GridHeader = <TItem extends object>(props: GridHeaderProps<TItem>) 
                     onChange={(value) => setGlobalFilter(String(value))}
                     className="p-2 font-lg shadow border border-block"
                     placeholder="Search all columns..."
+                    resetAllFilters={resetAllFilters}
                 />
             </div>
         </div>
@@ -95,10 +102,12 @@ function DebouncedInput({
     value: initialValue,
     onChange,
     debounce = 500,
-}: {
+    resetAllFilters
+}: { 
     value: string | number;
     onChange: (value: string | number) => void;
     debounce?: number;
+    resetAllFilters: () => void;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
     const [value, setValue] = React.useState<string | number>("");
 
@@ -123,6 +132,21 @@ function DebouncedInput({
             autoComplete="off"
             contentBefore={<Search24Regular />}
             style={{ width: "300px" }}
+            contentAfter={<>
+            <Menu>
+                  <MenuTrigger disableButtonEnhancement>
+                    <Button appearance="subtle" icon={<FilterFilled />} aria-label="View Menu"/>
+                  </MenuTrigger>
+
+                  <MenuPopover>
+                    <MenuList>
+                      <MenuItem icon={<ClearFilterIcon />} onClick={resetAllFilters}>
+                        Clear All Filters
+                      </MenuItem> 
+                    </MenuList>
+                  </MenuPopover>
+                </Menu>
+            </>}
         />
     );
 }

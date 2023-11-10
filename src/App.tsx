@@ -18,8 +18,8 @@ function App() {
       id: 'id',
       header: () => 'ID',
       cell: ({ row }) => {
-        return <div style={{ display: "flex" }}>
-          {row.getValue("id")}
+        return <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <strong>{row.getValue("id")}</strong>
           <TableAction />
         </div>
       },
