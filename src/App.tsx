@@ -26,6 +26,7 @@ function App() {
       aggregatedCell: () => null,
       filterFn: "arrIncludesSome",
       enableGrouping: false, 
+      enablePinning: true,
     }),
     columnHelper.accessor('firstName', {
       id: 'firstName',
@@ -122,7 +123,7 @@ function App() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setData(() => makeData(10000))
+      setData(() => makeData(100000))
       setIsLoading(false)
     }, 1000)
 

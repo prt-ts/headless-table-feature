@@ -51,7 +51,10 @@ import {
   TextSortAscendingFilled,
   TextSortDescendingFilled,
   GroupFilled,
-  GroupDismissFilled
+  GroupDismissFilled,
+  ArrowStepInLeftRegular,
+  ArrowStepInRightRegular,
+  PinOffRegular
 
 } from "@fluentui/react-icons";
 import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticStyles";
@@ -91,7 +94,8 @@ export function AdvancedTable<TItem extends object>(
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
     columns.map((column) => column.id as string)
   );
-  const [expanded, setExpanded] = React.useState<ExpandedState>({})
+  const [expanded, setExpanded] = React.useState<ExpandedState>({});
+  const [columnPinning, setColumnPinning] = React.useState({});
  
   // React.useEffect(() => {
   //   const expandedState : Record<string, boolean> = {};
@@ -124,6 +128,7 @@ export function AdvancedTable<TItem extends object>(
       rowSelection,
       columnOrder,
       columnVisibility, 
+      columnPinning,
     },
     columnResizeMode: "onChange",
     enableRowSelection: rowSelectionMode !== undefined,
@@ -141,6 +146,7 @@ export function AdvancedTable<TItem extends object>(
     onColumnOrderChange: setColumnOrder,
     onExpandedChange: setExpanded,
     onColumnVisibilityChange: setColumnVisibility,
+    onColumnPinningChange: setColumnPinning,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -620,6 +626,44 @@ const HeaderCell: React.FC<{
                     )}
                     <MenuDivider />
                   </MenuGroup>)}
+
+                  {header.column.getCanSort() && (
+                    <MenuGroup key={"pin columns"}>
+                      <MenuGroupHeader>
+                        Pin Column {" "} {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </MenuGroupHeader>
+                      {(<MenuItem
+                        onClick={() => {
+                          header.column?.pin("left")
+                        }}
+                        icon={<ArrowStepInLeftRegular />}
+                        disabled={header.column.getIsPinned() === "left"}
+                      >
+                        To Left
+                      </MenuItem>)}
+                      <MenuItem
+                         onClick={() => { 
+                          header.column?.pin("right")
+                        }}
+                        icon={<ArrowStepInRightRegular />}
+                        disabled={header.column.getIsPinned() === "right"}
+                      >
+                        To Right
+                      </MenuItem>
+                      {["left", "right"].includes(header.column.getIsPinned() as string) && (<MenuItem
+                        onClick={() => {
+                          header.column?.pin(false)
+                        }}
+                        icon={<PinOffRegular />}
+                      >
+                        Unpin Column
+                      </MenuItem>)}
+                      <MenuDivider />
+                    </MenuGroup>)}
+                  
                    
                   {header.column.getCanFilter() && (
                   <MenuGroup key={"filter-group"}>

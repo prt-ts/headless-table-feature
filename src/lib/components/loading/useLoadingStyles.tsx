@@ -10,6 +10,6 @@ export const useLoadingStyles = makeStyles({
         paddingBottom: "10px",
         position: "relative",
         ...shorthands.gap("10px"),
-        gridTemplateColumns: "min-content 20% 15% 30% 28%",
+        gridTemplateColumns: "min-content 20% 15% 30% 29%",
     },
 });

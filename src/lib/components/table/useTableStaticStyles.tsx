@@ -9,7 +9,7 @@ export const useStaticStyles = makeStaticStyles({
 export const useTableStaticStyles = makeStyles({
 
   tableContainer: {
-    height: "600px",
+    height: "650px",
     width: "100%",
     ...shorthands.overflow("hidden", "auto"),
     /* width */
