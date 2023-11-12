@@ -90,7 +90,8 @@ export const useTableStaticStyles = makeStyles({
 
   tHeadContentBtn: {
     ...shorthands.padding("0px", "0px", "0px", "0px"),
-    display: "flex",
+    display: "flex", 
+    ...shorthands.gap("5px"),
     alignContent: "space-between",
     alignItems: "center",
     justifyContent: "space-between",

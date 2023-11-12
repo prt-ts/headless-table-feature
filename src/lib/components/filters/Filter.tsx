@@ -1,7 +1,20 @@
 import { Column, Table } from "@tanstack/react-table"
 import { FilterMultiSelectCheckbox } from "./FilterMultiSelectCheckbox"
-import { Input } from "@fluentui/react-components"
+import { Input, makeStyles, shorthands } from "@fluentui/react-components"
 import { FilterMultiSelectRadio } from "./FilterMultiSelectRadio"
+
+const useFilterStyles = makeStyles({
+    root: {
+        ...shorthands.padding("10px"),
+        width: "100%"
+    },
+
+    defaultInput : {
+        ...shorthands.padding("10px"),
+        width: "100%"
+    }
+
+});
 
 export const Filter = <TItem extends object>({
     column,
@@ -11,6 +24,7 @@ export const Filter = <TItem extends object>({
     table: Table<TItem>
 }) => {
     const sortFunctionName = column.getFilterFn()?.name || "arrIncludesSome";
+    const styles = useFilterStyles();
 
     switch (sortFunctionName) {
 
@@ -29,7 +43,7 @@ export const Filter = <TItem extends object>({
     }
 
     return (
-        <div>
+        <div className={styles.root}>
             <Input
                 type="search"
                 value={(column.getFilterValue() || "") as string}
@@ -37,6 +51,8 @@ export const Filter = <TItem extends object>({
                     column.setFilterValue(data.value)
                 }}
                 placeholder="Search..."
+                size="small"
+                className={styles.defaultInput}
             />
         </div>
     )

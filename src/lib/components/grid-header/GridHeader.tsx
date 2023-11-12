@@ -21,10 +21,18 @@ export const GridHeader = <TItem extends object>(props: GridHeaderProps<TItem>) 
 
     const allLeafColumns = table.getAllLeafColumns() || [];
     
-    const resetAllFilters = () => {
-        table.setGlobalFilter(""); 
+    const resetAllFilters = React.useCallback(() => {
+        table.setGlobalFilter("");
         table.resetColumnFilters();
-    };
+    }, [table]);
+
+    const resetAllGrouping = React.useCallback(() => {
+        table.resetGrouping();
+    }, [table]);
+
+    const clearAllSelection = React.useCallback(() => {
+        table.toggleAllRowsSelected(false);
+    }, [table]);
 
     return (
         <div className={styles.tableTopHeaderContainer}>
@@ -91,6 +99,8 @@ export const GridHeader = <TItem extends object>(props: GridHeaderProps<TItem>) 
                     className="p-2 font-lg shadow border border-block"
                     placeholder="Search all columns..."
                     resetAllFilters={resetAllFilters}
+                    resetAllGrouping={resetAllGrouping} 
+                    clearAllSelection={clearAllSelection}
                 />
             </div>
         </div>
@@ -102,12 +112,16 @@ function DebouncedInput({
     value: initialValue,
     onChange,
     debounce = 500,
-    resetAllFilters
+    resetAllFilters,
+    resetAllGrouping,
+    clearAllSelection,
 }: { 
     value: string | number;
     onChange: (value: string | number) => void;
     debounce?: number;
     resetAllFilters: () => void;
+    resetAllGrouping: () => void;
+    clearAllSelection: () => void;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
     const [value, setValue] = React.useState<string | number>("");
 
@@ -142,6 +156,12 @@ function DebouncedInput({
                     <MenuList>
                       <MenuItem icon={<ClearFilterIcon />} onClick={resetAllFilters}>
                         Clear All Filters
+                      </MenuItem> 
+                      <MenuItem icon={<ClearFilterIcon />} onClick={resetAllGrouping}>
+                        Clear All Grouping
+                      </MenuItem> 
+                      <MenuItem icon={<ClearFilterIcon />} onClick={clearAllSelection}>
+                        Clear All Selection
                       </MenuItem> 
                     </MenuList>
                   </MenuPopover>

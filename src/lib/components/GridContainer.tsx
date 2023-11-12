@@ -19,7 +19,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  FilterFn
+  FilterFn,
+  ExpandedState
 } from "@tanstack/react-table";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -47,6 +48,11 @@ import {
   ArrowSortUp20Regular,
   GroupListRegular,
   FilterFilled,
+  TextSortAscendingFilled,
+  TextSortDescendingFilled,
+  GroupFilled,
+  GroupDismissFilled
+
 } from "@fluentui/react-icons";
 import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticStyles";
 import { Pagination } from "./pagination/Pagination";
@@ -55,13 +61,14 @@ import { Loading } from "./loading";
 import { NoItemGrid } from "./no-item";
 import { NoSearchResult } from "./no-search-result";
 import { Filter } from "./filters";
+import { GroupCollapsedIcon, GroupExpandedIcon } from "./icon-components/GridIcons";
 const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
 const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
 
 const arrIncludesSome: FilterFn<unknown> = (row, columnId, value) => {
   // Rank the item
   const rowValue = row.getValue(columnId); 
-  const passed = Array.isArray(value) && (value.length === 0 || value.includes(`${rowValue}`)); 
+  const passed = Array.isArray(value) && (value?.length === 0 || value.includes(`${rowValue}`)); 
 
   // console.log("rowValue", rowValue, "value", value, "passed", passed, "columnId", columnId)
    
@@ -84,6 +91,20 @@ export function AdvancedTable<TItem extends object>(
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
     columns.map((column) => column.id as string)
   );
+  const [expanded, setExpanded] = React.useState<ExpandedState>({})
+ 
+  // React.useEffect(() => {
+  //   const expandedState : Record<string, boolean> = {};
+
+  //   columns.forEach((column) => {
+  //     if (column.id) {
+  //       expandedState[column.id] = true;
+  //     }
+  //   });
+
+  //   setExpanded(expandedState);
+    
+  // }, [columns]);
  
   const table = useReactTable<TItem>({
     columns: columns,
@@ -91,15 +112,18 @@ export function AdvancedTable<TItem extends object>(
     filterFns: {
       arrIncludesSome
     },
+    initialState: {
+      expanded: true, 
+    },
     state: {
       sorting,
       columnFilters,
       globalFilter,
       grouping,
-      expanded: true,
+      expanded,
       rowSelection,
       columnOrder,
-      columnVisibility,
+      columnVisibility, 
     },
     columnResizeMode: "onChange",
     enableRowSelection: rowSelectionMode !== undefined,
@@ -107,13 +131,15 @@ export function AdvancedTable<TItem extends object>(
     enableFilters: true,
     enableGlobalFilter: true,
     enableColumnFilters: true,
-    filterFromLeafRows: true,
+    filterFromLeafRows: true, 
+    autoResetExpanded: false,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onGroupingChange: setGrouping,
     onColumnOrderChange: setColumnOrder,
+    onExpandedChange: setExpanded,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -122,7 +148,7 @@ export function AdvancedTable<TItem extends object>(
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues()
   });
 
   React.useImperativeHandle(
@@ -291,7 +317,7 @@ export function AdvancedTable<TItem extends object>(
                       {cell.getIsGrouped() ? (
                         // If it's a grouped cell, add an expander and row count
                         <>
-                          {/* <button
+                          <Button
                             {...{
                               onClick: row.getToggleExpandedHandler(),
                               style: {
@@ -300,14 +326,15 @@ export function AdvancedTable<TItem extends object>(
                                   : "normal",
                               },
                             }}
-                          > */}
-                          {/* {row.getIsExpanded() ? "👇" : "👉"}{" "} */}
+                            appearance="transparent"
+                            icon={row.getIsExpanded() ? <GroupExpandedIcon /> : <GroupCollapsedIcon />}
+                          >
                           <strong>{flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
                           )}{" "}
                             ({row.subRows.length})</strong>
-                          {/* </button> */}
+                          </Button>
                         </>
                       ) : cell.getIsAggregated() ? (
                         // If the cell is aggregated, use the Aggregated
@@ -448,18 +475,21 @@ const HeaderCell: React.FC<{
           <div ref={previewRef}>
             {header.isPlaceholder ? null : (
               <Button
-                {...{
-                  onClick: header.column.getToggleSortingHandler(),
-                  onDoubleClick: () => {
-                    if (!header.column.getCanGroup()) return;
-                    header.column.getToggleGroupingHandler()();
-                  },
-                  style: {
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "left",
-                    flex: 1,
-                  },
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "left",
+                  flex: 1,
+                }}
+                onClick={(e) => {
+                  header.column.toggleSorting(
+                    header.column.getIsSorted() === "asc",
+                    e.ctrlKey
+                  );
+                }}
+                onDoubleClick={() => {
+                  if (!header.column.getCanGroup()) return;
+                  header.column.getToggleGroupingHandler()();
                 }}
                 appearance="transparent" 
                 className={styles.tHeadContentBtn}
@@ -522,42 +552,84 @@ const HeaderCell: React.FC<{
 
               <MenuPopover className={styles.tHeadMenuPopover}>
                 <MenuList>
-                  {header.column.getCanFilter() && (
-                  <MenuGroup key={"filter-group"}>
+                  {header.column.getCanSort() && (
+                    <MenuGroup key={"sort-group"}>
+                      <MenuGroupHeader>
+                        Sort by {" "} {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </MenuGroupHeader>
+                      {(<MenuItem
+                        onClick={(e) => {
+                          const isControlKeySelected = e.ctrlKey;
+                          header.column?.toggleSorting(false, isControlKeySelected)
+                        }}
+                        icon={<TextSortAscendingFilled />}
+                        disabled={header.column.getIsSorted() === "asc"}
+                      >
+                        Sort A to Z
+                      </MenuItem>)}
+                      <MenuItem
+                         onClick={(e) => {
+                          const isControlKeySelected = e.ctrlKey;
+                          header.column?.toggleSorting(true, isControlKeySelected)
+                        }}
+                        icon={<TextSortDescendingFilled />}
+                        disabled={header.column.getIsSorted() === "desc"}
+                      >
+                        Sort Z to A
+                      </MenuItem>
+                      <MenuDivider />
+                    </MenuGroup>)}
+
+                  {header.column.getCanGroup() && (<MenuGroup key={"grouping-group"}>
                     <MenuGroupHeader>
-                      Filter by {flexRender(
+                      Group by{" "}{flexRender(
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-                    </MenuGroupHeader>
-                    <Filter column={header.column} table={table} />
-                  </MenuGroup>)}
-                  <MenuDivider />
-
-                  <MenuGroup key={"grouping-group"}>
-                    <MenuGroupHeader>
-                      Column Actions
                     </MenuGroupHeader>
                     {!header.column.getIsGrouped() && (
                       <MenuItem
                         onClick={() =>
                           header.column.getToggleGroupingHandler()()
                         }
+                        icon={<GroupFilled />}
                       >
-                        Group Column
+                        Group by{" "}{flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                       </MenuItem>
                     )}
                     {header.column.getIsGrouped() && (
-                      <MenuItem 
+                      <MenuItem
                         onClick={() =>
                           header.column.getToggleGroupingHandler()()
                         }
+                        icon={<GroupDismissFilled />}
                       >
-                        Remove Group
+                        Remove Grouping on{" "}{flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                       </MenuItem>
                     )}
-                  </MenuGroup>
-                  
+                    <MenuDivider />
+                  </MenuGroup>)}
+                   
+                  {header.column.getCanFilter() && (
+                  <MenuGroup key={"filter-group"}>
+                    <MenuGroupHeader>
+                      Filter by{" "}{flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </MenuGroupHeader>
+                    <Filter column={header.column} table={table} />
+                  </MenuGroup>)} 
+                                    
                 </MenuList>
               </MenuPopover>
             </Menu>

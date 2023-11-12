@@ -25,7 +25,7 @@ function App() {
       },
       aggregatedCell: () => null,
       filterFn: "arrIncludesSome",
-      enableGrouping: false,
+      enableGrouping: false, 
     }),
     columnHelper.accessor('firstName', {
       id: 'firstName',
@@ -86,7 +86,7 @@ function App() {
           id: 'country',
           header: 'Country',
           aggregatedCell: () => null,
-          filterFn: "auto",
+          filterFn: "arrIncludes",
         }),
       ]
     }),
