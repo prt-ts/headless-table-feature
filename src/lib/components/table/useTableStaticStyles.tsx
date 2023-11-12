@@ -156,6 +156,15 @@ export const useTableStaticStyles = makeStyles({
     minHeight: "35px",
     height: "35px",
   },
+
+  tFoot: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+    position: "sticky",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+  },
   
   resizer: {
     ...shorthands.borderRight("1px", "solid", tokens.colorNeutralBackground5),

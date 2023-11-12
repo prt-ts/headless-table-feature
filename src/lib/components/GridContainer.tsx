@@ -231,6 +231,7 @@ export function AdvancedTable<TItem extends object>(
                         }
                         onChange={table.getToggleAllRowsSelectedHandler()}
                         aria-label="Select All Rows"
+                        title={"Select All Rows"}
                       />)}
                   </th>
                 )}
@@ -366,7 +367,7 @@ export function AdvancedTable<TItem extends object>(
             )}
           </tbody>
           {rowSelectionMode === "multiple" && !isLoading && !noItems && !noSearchResult && (
-            <tfoot>
+            <tfoot className={styles.tFoot}>
               <tr>
                 <td className="p-1">
                   <Checkbox
@@ -377,6 +378,7 @@ export function AdvancedTable<TItem extends object>(
                     }
                     onChange={table.getToggleAllPageRowsSelectedHandler()}
                     aria-label="Select All Current Page Rows"
+                    title={"Select All Current Page Rows"}
                   />
                 </td>
                 <td colSpan={20}>
