@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
  
 export type Person = {
-  id: string;
+  id: number;
   firstName: string
   lastName: string
   age: number
@@ -29,7 +29,7 @@ const range = (len: number) => {
 
 const newPerson = (index: number): Person => {
   return {
-    id: `${index+1}`,
+    id: index + 1,
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
     age: faker.number.int({ max: 40 }),

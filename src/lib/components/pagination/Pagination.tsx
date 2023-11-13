@@ -99,6 +99,8 @@ export const Pagination = <TItem extends object>(
                 }}
                 className={styles.pageSizeInput}
                 aria-label="Page Number"
+                autoComplete={"off"}
+                autoCorrect={"off"}
               />
             </span>
           </div>

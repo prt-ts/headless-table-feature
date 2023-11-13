@@ -86,22 +86,38 @@ export function AdvancedTable<TItem extends object>(
 ) {
   const { columns, data, rowSelectionMode } = props;
 
-  const [sorting, setSorting] = React.useState<SortingState>(props.sortingState ?? []);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(props.columnFilterState ?? []);
-  const [globalFilter, setGlobalFilter] = React.useState(props.defaultGlobalFilter ?? "");
-  const [grouping, setGrouping] = React.useState<GroupingState>(props.groupingState ?? []);
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-  const [columnVisibility, setColumnVisibility] = React.useState(props.columnVisibility ?? {}); 
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
-    columns.map((column) => column.id as string)
+  const [sorting, setSorting] = React.useState<SortingState>(
+    props.sortingState ?? []
   );
-  const [expanded, setExpanded] = React.useState<ExpandedState>(props.expandedState ?? {});
-  const [columnPinning, setColumnPinning] = React.useState({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    props.columnFilterState ?? []
+  );
+  const [globalFilter, setGlobalFilter] = React.useState(
+    props.defaultGlobalFilter ?? ""
+  );
+  const [grouping, setGrouping] = React.useState<GroupingState>(
+    props.groupingState ?? []
+  );
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
+    props.rowSelectionState ?? {}
+  );
+  const [columnVisibility, setColumnVisibility] = React.useState(
+    props.columnVisibility ?? {}
+  );
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
+    () => props.columnOrderState ?? columns.map((column) => column.id as string)
+  );
+  const [expanded, setExpanded] = React.useState<ExpandedState>(
+    props.expandedState ?? {}
+  );
+  const [columnPinning, setColumnPinning] = React.useState(
+    props.columnPinningState ?? {}
+  );
   // const [rowPinning, setRowPinning] = React.useState<RowPinningState>({
   //   top: [],
   //   bottom: [],
   // });
- 
+
   // React.useEffect(() => {
   //   const expandedState : Record<string, boolean> = {};
 
@@ -112,20 +128,20 @@ export function AdvancedTable<TItem extends object>(
   //   });
 
   //   setExpanded(expandedState);
-    
-  // }, [columns]); 
-   
+
+  // }, [columns]);
+
   const table = useReactTable<TItem>({
     columns: columns,
-    data, 
+    data,
     filterFns: {
-      arrIncludesSome
+      arrIncludesSome,
     },
     initialState: {
-      expanded: true, 
+      expanded: true,
       pagination: {
         pageSize: props.pageSize,
-      } 
+      },
     },
     state: {
       sorting,
@@ -135,16 +151,16 @@ export function AdvancedTable<TItem extends object>(
       expanded,
       rowSelection,
       columnOrder,
-      columnVisibility, 
+      columnVisibility,
       columnPinning,
     },
     columnResizeMode: "onChange",
     enableRowSelection: rowSelectionMode !== undefined,
-    enableMultiRowSelection: rowSelectionMode === "multiple", 
+    enableMultiRowSelection: rowSelectionMode === "multiple",
     enableFilters: true,
     enableGlobalFilter: true,
     enableColumnFilters: true,
-    filterFromLeafRows: true, 
+    filterFromLeafRows: true,
     autoResetExpanded: false,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -162,7 +178,7 @@ export function AdvancedTable<TItem extends object>(
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues()
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
   });
 
   const getTableState = React.useCallback(() => {
@@ -215,13 +231,14 @@ export function AdvancedTable<TItem extends object>(
     virtualRows.length > 0
       ? totalSize - (virtualRows?.[virtualRows.length - 1]?.end || 0)
       : 0;
- 
+
   const headerGroups = table.getHeaderGroups();
 
-  // utilities 
+  // utilities
   const isLoading = props.isLoading && virtualRows.length == 0;
   const noItems = !isLoading && props.data?.length == 0;
-  const noSearchResult = !isLoading && props.data?.length > 0 && virtualRows.length == 0;
+  const noSearchResult =
+    !isLoading && props.data?.length > 0 && virtualRows.length == 0;
 
   useStaticStyles();
   const styles = useTableStaticStyles();
@@ -252,7 +269,8 @@ export function AdvancedTable<TItem extends object>(
                         onChange={table.getToggleAllRowsSelectedHandler()}
                         aria-label="Select All Rows"
                         title={"Select All Rows"}
-                      />)}
+                      />
+                    )}
                   </th>
                 )}
                 {rowSelectionMode === "single" && (
@@ -298,7 +316,7 @@ export function AdvancedTable<TItem extends object>(
                           row.getIsSomeSelected()
                             ? "mixed"
                             : row.getIsSelected() ||
-                            row.getIsAllSubRowsSelected()
+                              row.getIsAllSubRowsSelected()
                         }
                         disabled={!row.getCanSelect()}
                         onChange={row.getToggleSelectedHandler()}
@@ -348,23 +366,32 @@ export function AdvancedTable<TItem extends object>(
                               },
                             }}
                             appearance="transparent"
-                            icon={row.getIsExpanded() ? <GroupExpandedIcon /> : <GroupCollapsedIcon />}
+                            icon={
+                              row.getIsExpanded() ? (
+                                <GroupExpandedIcon />
+                              ) : (
+                                <GroupCollapsedIcon />
+                              )
+                            }
                           >
-                          <strong>{flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}{" "}
-                            ({row.subRows.length})</strong>
+                            <strong>
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}{" "}
+                              ({row.subRows.length})
+                            </strong>
                           </Button>
                         </>
                       ) : cell.getIsAggregated() ? (
                         // If the cell is aggregated, use the Aggregated
                         // renderer for cell
-                        <strong>{flexRender(
-                          cell.column.columnDef.aggregatedCell ??
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                        <strong>
+                          {flexRender(
+                            cell.column.columnDef.aggregatedCell ??
+                              cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                         </strong>
                       ) : cell.getIsPlaceholder() ? null : ( // For cells with repeated values, render null
                         // Otherwise, just render the regular cell
@@ -386,35 +413,36 @@ export function AdvancedTable<TItem extends object>(
               </tr>
             )}
           </tbody>
-          {rowSelectionMode === "multiple" && !isLoading && !noItems && !noSearchResult && (
-            <tfoot className={styles.tFoot}>
-              <tr>
-                <td className="p-1">
-                  <Checkbox
-                    checked={
-                      table.getIsSomePageRowsSelected()
-                        ? "mixed"
-                        : table.getIsAllPageRowsSelected()
-                    }
-                    onChange={table.getToggleAllPageRowsSelectedHandler()}
-                    aria-label="Select All Current Page Rows"
-                    title={"Select All Current Page Rows"}
-                  />
-                </td>
-                <td colSpan={20}>
-                  {table.getIsAllPageRowsSelected() ? "Unselect" : "Select"} All
-                  Current Page Rows ({table.getRowModel().rows.length})
-                </td>
-              </tr>
-            </tfoot>
-          )}
+          {rowSelectionMode === "multiple" &&
+            !isLoading &&
+            !noItems &&
+            !noSearchResult && (
+              <tfoot className={styles.tFoot}>
+                <tr>
+                  <td className="p-1">
+                    <Checkbox
+                      checked={
+                        table.getIsSomePageRowsSelected()
+                          ? "mixed"
+                          : table.getIsAllPageRowsSelected()
+                      }
+                      onChange={table.getToggleAllPageRowsSelectedHandler()}
+                      aria-label="Select All Current Page Rows"
+                      title={"Select All Current Page Rows"}
+                    />
+                  </td>
+                  <td colSpan={20}>
+                    {table.getIsAllPageRowsSelected() ? "Unselect" : "Select"}{" "}
+                    All Current Page Rows ({table.getRowModel().rows.length})
+                  </td>
+                </tr>
+              </tfoot>
+            )}
         </table>
         {isLoading && <Loading />}
         {noItems && <NoItemGrid message={props.noItemPage} />}
         {noSearchResult && <NoSearchResult message={props.noFilterMatchPage} />}
       </div>
-
-
 
       <Pagination table={table} pageSizeOptions={props.pageSizeOptions} />
     </DndProvider>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ColumnDef, ColumnFiltersState, ExpandedState, GroupingState, SortingState, VisibilityState } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, ColumnOrderState, ColumnPinningState, ExpandedState, GroupingState, RowSelectionState, SortingState, VisibilityState } from "@tanstack/react-table";
 
 export type TableProps<TItem extends object> = {
     /**
@@ -65,7 +65,22 @@ export type TableProps<TItem extends object> = {
     /**
      * Grouping Expanded state
      */
-    expandedState : ExpandedState;
+    expandedState?: ExpandedState;
+    
+    /**
+     * Row selection state
+     */
+    rowSelectionState?: RowSelectionState; 
+    
+    /**
+     * Column pinning state
+     */
+    columnPinningState?: ColumnPinningState;
+
+    /**
+     * Column order state
+     */
+    columnOrderState?: ColumnOrderState;
 
     /**
     * Component visible if the no item match the filter condition

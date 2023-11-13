@@ -176,14 +176,19 @@ function App() {
           progress: false, 
           firstName: false, 
         }}
-        sortingState={[
-          { id: "id", desc: false },
-          { id: "age", desc: true },
-        ]} 
-        groupingState={["status"]}
-        expandedState={{
-          "status:complicated": true
-        }}
+        // sortingState={[
+        //   { id: "id", desc: false },
+        //   { id: "age", desc: true },
+        // ]} 
+        // columnPinningState={
+        //   {
+        //     left: ["state"],
+        //   }
+        // }
+        // groupingState={["status"]}
+        // expandedState={{
+        //   "status:complicated": true
+        // }}
       // noItemPage={<div>No Item</div>}
       // noFilterMatchPage={<div>No Filter Match</div>}
       />
