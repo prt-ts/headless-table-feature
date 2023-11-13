@@ -181,6 +181,9 @@ function App() {
           { id: "age", desc: true },
         ]} 
         groupingState={["status"]}
+        expandedState={{
+          "status:complicated": true
+        }}
       // noItemPage={<div>No Item</div>}
       // noFilterMatchPage={<div>No Filter Match</div>}
       />

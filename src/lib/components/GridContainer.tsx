@@ -95,7 +95,7 @@ export function AdvancedTable<TItem extends object>(
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
     columns.map((column) => column.id as string)
   );
-  const [expanded, setExpanded] = React.useState<ExpandedState>({});
+  const [expanded, setExpanded] = React.useState<ExpandedState>(props.expandedState ?? {});
   const [columnPinning, setColumnPinning] = React.useState({});
   // const [rowPinning, setRowPinning] = React.useState<RowPinningState>({
   //   top: [],
