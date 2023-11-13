@@ -143,6 +143,16 @@ function App() {
     console.log(tableState)
   }
 
+  const saveCurrentTableState = () => {
+    const tableState = tableRef.current?.saveCurrentTableState("view1");
+    console.log(tableState)
+  }
+
+  const applyLastSavedTableState = () => {
+    const tableState = tableRef.current?.applySavedView("view1");
+    console.log(tableState)
+  }
+
   const [selectionMode, setSelectionMode] = useState<"single" | "multiple" | undefined>("multiple")
 
 
@@ -150,6 +160,8 @@ function App() {
     <div>
       <button onClick={logSelectedRows}>Log Selected Rows</button>
       <button onClick={logTableState}>Get Table State</button>
+      <button onClick={saveCurrentTableState}>Save Current Table State</button>
+      <button onClick={applyLastSavedTableState}>Apply Last Saved Table State</button>
       <Field label="Selection Mode">
         <RadioGroup
           value={selectionMode}
@@ -173,13 +185,13 @@ function App() {
         gridTitle={<strong>Grid Header</strong>}
         rowSelectionMode={selectionMode}
         columnVisibility={{
-          progress: false, 
-          firstName: false, 
+          progress: false,
+          firstName: false,
         }}
         // sortingState={[
         //   { id: "id", desc: false },
         //   { id: "age", desc: true },
-        // ]} 
+        // ]}
         // columnPinningState={
         //   {
         //     left: ["state"],
@@ -189,8 +201,8 @@ function App() {
         // expandedState={{
         //   "status:complicated": true
         // }}
-      // noItemPage={<div>No Item</div>}
-      // noFilterMatchPage={<div>No Filter Match</div>}
+        // noItemPage={<div>No Item</div>}
+        // noFilterMatchPage={<div>No Filter Match</div>}
       />
     </div>
   );

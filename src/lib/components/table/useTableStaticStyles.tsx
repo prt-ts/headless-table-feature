@@ -66,46 +66,7 @@ export const useTableStaticStyles = makeStyles({
     ),
   },
 
-  tHeadCell: {
-    position: "relative",
-    fontSize: tokens.fontSizeBase300,
-    fontWeight: tokens.fontWeightBold,
-    minWidth: "1rem", 
-    ...shorthands.padding("2px", "4px"),
-    ...shorthands.borderLeft("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderRight("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderBottom("1px", "solid", tokens.colorNeutralStroke1),
-  },
-
-  tHeadCellContent: {
-    display: "flex",
-    alignContent: "space-between",
-    alignItems: "center",
-    justifyContent: "space-between",
-    cursor: "pointer",
-    width: "100%",
-    minWidth: "1rem",
-    ...shorthands.padding("3px", "4px"),
-  },
-
-  tHeadContentBtn: {
-    ...shorthands.padding("0px", "0px", "0px", "0px"),
-    display: "flex", 
-    ...shorthands.gap("5px"),
-    alignContent: "space-between",
-    alignItems: "center",
-    justifyContent: "space-between",
-    cursor: "pointer",
-    width: "100%",
-    height: "100%",
-    minWidth: "1rem",
-  },
-
-  tHeadMenuPopover: {
-    ...shorthands.padding("0px", "0px", "0px", "0px"),
-    width: "300px",
-  },
-
+  
   tBody: {
     ...shorthands.padding("0px", "0px", "0px", "0px"),
     zIndex: 0,
@@ -166,25 +127,5 @@ export const useTableStaticStyles = makeStyles({
     width: "100%",
   },
   
-  resizer: {
-    ...shorthands.borderRight("1px", "solid", tokens.colorNeutralBackground5),
-
-    width: "8px",
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    cursor: "col-resize",
-    resize: "horizontal",
-
-    ":hover": {
-      borderRightWidth: "4px",
-      borderRightColor: tokens.colorNeutralBackground2Pressed,
-    },
-  },
-
-  resizerActive: {
-    borderRightWidth: "4px",
-    borderRightColor: tokens.colorNeutralBackground2Pressed,
-  },
+ 
 });

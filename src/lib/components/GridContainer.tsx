@@ -1,7 +1,6 @@
 import * as React from "react";
 import { TableProps, TableRef } from "../types";
 import {
-  Column,
   ColumnFiltersState,
   ColumnOrderState,
   GroupingState,
@@ -20,54 +19,25 @@ import {
   getSortedRowModel,
   useReactTable,
   FilterFn,
-  ExpandedState
+  ExpandedState,
+  PaginationState
 } from "@tanstack/react-table";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useVirtual } from "react-virtual";
 import {
   Button,
   Checkbox,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuGroup,
-  MenuGroupHeader,
-  MenuItem,
-  MenuList,
-  MenuPopover,
-  MenuTrigger,
   Radio,
-  mergeClasses,
-} from "@fluentui/react-components";
-import {
-  bundleIcon,
-  ArrowSortDown20Filled,
-  ArrowSortDown20Regular,
-  ArrowSortUp20Filled,
-  ArrowSortUp20Regular,
-  GroupListRegular,
-  FilterFilled,
-  TextSortAscendingFilled,
-  TextSortDescendingFilled,
-  GroupFilled,
-  GroupDismissFilled,
-  ArrowStepInLeftRegular,
-  ArrowStepInRightRegular,
-  PinOffRegular,
-  PinRegular,
-
-} from "@fluentui/react-icons";
+} from "@fluentui/react-components"; 
 import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticStyles";
 import { Pagination } from "./pagination/Pagination";
 import { GridHeader } from "./grid-header";
 import { Loading } from "./loading";
 import { NoItemGrid } from "./no-item";
 import { NoSearchResult } from "./no-search-result";
-import { Filter } from "./filters";
 import { GroupCollapsedIcon, GroupExpandedIcon } from "./icon-components/GridIcons";
-const SortAscIcon = bundleIcon(ArrowSortDown20Filled, ArrowSortDown20Regular);
-const SortDescIcon = bundleIcon(ArrowSortUp20Filled, ArrowSortUp20Regular);
+import { HeaderCell } from "./thead";
 
 const arrIncludesSome: FilterFn<unknown> = (row, columnId, value) => {
   // Rank the item
@@ -85,6 +55,11 @@ export function AdvancedTable<TItem extends object>(
   ref: React.ForwardedRef<TableRef<TItem>>
 ) {
   const { columns, data, rowSelectionMode } = props;
+
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageSize: props.pageSize || 10,
+    pageIndex: 0,
+  });
 
   const [sorting, setSorting] = React.useState<SortingState>(
     props.sortingState ?? []
@@ -144,6 +119,7 @@ export function AdvancedTable<TItem extends object>(
       },
     },
     state: {
+      pagination,
       sorting,
       columnFilters,
       globalFilter,
@@ -163,6 +139,7 @@ export function AdvancedTable<TItem extends object>(
     filterFromLeafRows: true,
     autoResetExpanded: false,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
@@ -183,6 +160,7 @@ export function AdvancedTable<TItem extends object>(
 
   const getTableState = React.useCallback(() => {
     return {
+      pagination,
       sorting,
       columnFilters,
       globalFilter,
@@ -194,6 +172,7 @@ export function AdvancedTable<TItem extends object>(
       columnPinning,
     };
   }, [
+    pagination,
     sorting,
     columnFilters,
     globalFilter,
@@ -211,6 +190,32 @@ export function AdvancedTable<TItem extends object>(
       return {
         table,
         getTableState: getTableState,
+        saveCurrentTableState: (viewName: string) => {
+          const tableState = getTableState();
+          const tableStateString = JSON.stringify(tableState);
+          localStorage.setItem(viewName, tableStateString);
+          return true;
+        },
+        applySavedView: (viewName: string) => {
+          const tableStateString = localStorage.getItem(viewName);
+          if (tableStateString) {
+            const tableState = JSON.parse(tableStateString); 
+            setSorting(tableState.sorting);
+            setColumnFilters(tableState.columnFilters);
+            setGlobalFilter(tableState.globalFilter);
+            setGrouping(tableState.grouping);
+            setExpanded(tableState.expanded);
+            setRowSelection(tableState.rowSelection);
+            setColumnOrder(tableState.columnOrder);
+            setColumnVisibility(tableState.columnVisibility);
+            setColumnPinning(tableState.columnPinning);
+            setTimeout(() => {
+              setPagination(tableState.pagination);
+            }, 10);
+            return true;
+          }
+          return false;
+        },
       };
     },
     [table, getTableState]
@@ -456,290 +461,3 @@ export const ForwardedAdvancedTable = React.forwardRef(AdvancedTable) as <
 ) => React.ReactElement<
   TableProps<TItem> & { ref?: React.ForwardedRef<TableRef<TItem>> }
 >;
-
-
-const reorderColumn = (
-  draggedColumnId: string,
-  targetColumnId: string,
-  columnOrder: string[]
-): ColumnOrderState => {
-  columnOrder.splice(
-    columnOrder.indexOf(targetColumnId),
-    0,
-    columnOrder.splice(columnOrder.indexOf(draggedColumnId), 1)[0] as string
-  );
-  return [...columnOrder];
-};
-
-const HeaderCell: React.FC<{
-  header: Header<object, unknown>;
-  table: Table<object>;
-  hideMenu?: boolean;
-  headerDepth: number;
-  totalNumberOfHeaderDepth: number;
-}> = ({ header, table, hideMenu, headerDepth, totalNumberOfHeaderDepth }) => {
-  const { getState, setColumnOrder } = table;
-  const { columnOrder } = getState();
-  const { column } = header;
-
-  const [{ isOver }, dropRef] = useDrop({
-    accept: "column",
-    drop: (draggedColumn: Column<object>) => {
-      const newColumnOrder = reorderColumn(
-        draggedColumn.id,
-        column.id,
-        columnOrder
-      );
-      setColumnOrder(newColumnOrder);
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
-
-  const [{ isDragging }, dragRef, previewRef] = useDrag({
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-    item: () => column,
-    type: "column",
-  });
-
-  const styles = useTableStaticStyles();
- 
-  return (
-    <th
-      colSpan={header.colSpan}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? "drag" : "pointer",
-        alignItems: headerDepth === totalNumberOfHeaderDepth ? "left" : "center",
-        zIndex: 99,
-        backgroundColor: isOver ? "#0000000d" : "transparent",
-        border: isOver ? "1px dashed #0000000d" : "none",
-      }}
-      className={styles.tHeadCell}
-    >
-      <div ref={dragRef}>
-        <div className={styles.tHeadCellContent} ref={dropRef}>
-          <div ref={previewRef}>
-            {header.isPlaceholder ? null : (
-              <Button
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "left",
-                  flex: 1,
-                }}
-                onClick={(e) => {
-                  header.column.toggleSorting(
-                    header.column.getIsSorted() === "asc",
-                    e.ctrlKey
-                  );
-                }}
-                onDoubleClick={() => {
-                  if (!header.column.getCanGroup()) return;
-                  header.column.getToggleGroupingHandler()();
-                }}
-                appearance="transparent" 
-                className={styles.tHeadContentBtn}
-                icon={
-                  {
-                    asc: (
-                      <strong>
-                        <SortAscIcon />
-                      </strong>
-                    ),
-                    desc: (
-                      <strong>
-                        <SortDescIcon />
-                      </strong>
-                    ),
-                  }[header.column.getIsSorted() as string] ?? undefined
-                }
-                iconPosition="after"
-              >
-                {/* {header.column.getCanGroup() && (
-                <button
-                  {...{
-                    onClick: header.column.getToggleGroupingHandler(),
-                    style: {
-                      cursor: "pointer",
-                    },
-                  }}
-                >
-                  {header.column.getIsGrouped()
-                    ? `🛑(${header.column.getGroupedIndex()}) `
-                    : `👊 `}
-                </button>
-              )} */}
-
-                <strong>
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </strong>
-
-                {/* indicator for grouping */}
-                {header.column.getIsGrouped() && <GroupListRegular />}
-                {/* indicator for filtering */}
-                {header.column.getIsFiltered() && (
-                  <strong>
-                    <FilterFilled />
-                  </strong>
-                )}
-
-                {
-                  header.column.getIsPinned() && (<PinRegular />)
-                }
-
-                {/* {header.column.columnDef.id && header.column.getCanResize() && <button ref={dragRef}>🟰</button>} */}
-              </Button>
-            )}
-          </div>
-          {!header.isPlaceholder && !hideMenu && (<div>
-            <Menu>
-              <MenuTrigger disableButtonEnhancement>
-                <MenuButton appearance="transparent" aria-label="View Column Actions"></MenuButton>
-              </MenuTrigger>
-
-              <MenuPopover className={styles.tHeadMenuPopover}>
-                <MenuList>
-                  {header.column.getCanSort() && (
-                    <MenuGroup key={"sort-group"}>
-                      <MenuGroupHeader>
-                        Sort by {" "} {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </MenuGroupHeader>
-                      {(<MenuItem
-                        onClick={(e) => {
-                          const isControlKeySelected = e.ctrlKey;
-                          header.column?.toggleSorting(false, isControlKeySelected)
-                        }}
-                        icon={<TextSortAscendingFilled />}
-                        disabled={header.column.getIsSorted() === "asc"}
-                      >
-                        Sort A to Z
-                      </MenuItem>)}
-                      <MenuItem
-                         onClick={(e) => {
-                          const isControlKeySelected = e.ctrlKey;
-                          header.column?.toggleSorting(true, isControlKeySelected)
-                        }}
-                        icon={<TextSortDescendingFilled />}
-                        disabled={header.column.getIsSorted() === "desc"}
-                      >
-                        Sort Z to A
-                      </MenuItem>
-                      <MenuDivider />
-                    </MenuGroup>)}
-
-                  {header.column.getCanGroup() && (<MenuGroup key={"grouping-group"}>
-                    <MenuGroupHeader>
-                      Group by{" "}{flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </MenuGroupHeader>
-                    {!header.column.getIsGrouped() && (
-                      <MenuItem
-                        onClick={() =>
-                          header.column.getToggleGroupingHandler()()
-                        }
-                        icon={<GroupFilled />}
-                      >
-                        Group by{" "}{flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </MenuItem>
-                    )}
-                    {header.column.getIsGrouped() && (
-                      <MenuItem
-                        onClick={() =>
-                          header.column.getToggleGroupingHandler()()
-                        }
-                        icon={<GroupDismissFilled />}
-                      >
-                        Remove Grouping on{" "}{flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </MenuItem>
-                    )}
-                    <MenuDivider />
-                  </MenuGroup>)}
-
-                  {header.column.getCanSort() && (
-                    <MenuGroup key={"pin columns"}>
-                      <MenuGroupHeader>
-                        Pin Column {" "} {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </MenuGroupHeader>
-                      {(<MenuItem
-                        onClick={() => {
-                          header.column?.pin("left")
-                        }}
-                        icon={<ArrowStepInLeftRegular />}
-                        disabled={header.column.getIsPinned() === "left"}
-                      >
-                        To Left
-                      </MenuItem>)}
-                      <MenuItem
-                         onClick={() => { 
-                          header.column?.pin("right")
-                        }}
-                        icon={<ArrowStepInRightRegular />}
-                        disabled={header.column.getIsPinned() === "right"}
-                      >
-                        To Right
-                      </MenuItem>
-                      {["left", "right"].includes(header.column.getIsPinned() as string) && (<MenuItem
-                        onClick={() => {
-                          header.column?.pin(false)
-                        }}
-                        icon={<PinOffRegular />}
-                      >
-                        Unpin Column
-                      </MenuItem>)}
-                      <MenuDivider />
-                    </MenuGroup>)}
-                  
-                   
-                  {header.column.getCanFilter() && (
-                  <MenuGroup key={"filter-group"}>
-                    <MenuGroupHeader>
-                      Filter by{" "}{flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </MenuGroupHeader>
-                    <Filter column={header.column} table={table} />
-                  </MenuGroup>)} 
-                                    
-                </MenuList>
-              </MenuPopover>
-            </Menu>
-          </div>)}
-        </div>
-      </div>
-
-      {header.column.getCanResize() && (
-        <div
-          onMouseDown={header.getResizeHandler()}
-          onTouchStart={header.getResizeHandler()}
-          className={mergeClasses(
-            styles.resizer,
-            column.getIsResizing() && styles.resizerActive
-          )}
-        />
-      )}
-
-    </th>
-  );
-};
