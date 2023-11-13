@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, GroupingState, SortingState, VisibilityState } from "@tanstack/react-table";
 
 export type TableProps<TItem extends object> = {
     /**
@@ -37,11 +37,30 @@ export type TableProps<TItem extends object> = {
      */
     rowSelectionMode?: "single" | "multiple";
 
+    /**
+     * Default global filter value.
+     */
+    defaultGlobalFilter?: string;
+
+    /**
+     * Column filter state
+     */
+    columnFilterState?: ColumnFiltersState;
 
     /** 
-     * Hidden columns
+     * Column Visibility
      */
-    defaultHiddenColumns?: string[];
+    columnVisibility?: VisibilityState;
+
+    /**
+     * Sorting state
+     */
+    sortingState?: SortingState;
+
+    /**
+     * Grouping state
+     */
+    groupingState?: GroupingState;
 
     /**
     * Component visible if the no item match the filter condition

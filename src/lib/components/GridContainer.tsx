@@ -54,7 +54,8 @@ import {
   GroupDismissFilled,
   ArrowStepInLeftRegular,
   ArrowStepInRightRegular,
-  PinOffRegular
+  PinOffRegular,
+  PinRegular,
 
 } from "@fluentui/react-icons";
 import { useStaticStyles, useTableStaticStyles } from "./table/useTableStaticStyles";
@@ -85,17 +86,21 @@ export function AdvancedTable<TItem extends object>(
 ) {
   const { columns, data, rowSelectionMode } = props;
 
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = React.useState("");
-  const [grouping, setGrouping] = React.useState<GroupingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>(props.sortingState ?? []);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(props.columnFilterState ?? []);
+  const [globalFilter, setGlobalFilter] = React.useState(props.defaultGlobalFilter ?? "");
+  const [grouping, setGrouping] = React.useState<GroupingState>(props.groupingState ?? []);
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-  const [columnVisibility, setColumnVisibility] = React.useState({}); 
+  const [columnVisibility, setColumnVisibility] = React.useState(props.columnVisibility ?? {}); 
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(
     columns.map((column) => column.id as string)
   );
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
   const [columnPinning, setColumnPinning] = React.useState({});
+  // const [rowPinning, setRowPinning] = React.useState<RowPinningState>({
+  //   top: [],
+  //   bottom: [],
+  // });
  
   // React.useEffect(() => {
   //   const expandedState : Record<string, boolean> = {};
@@ -108,8 +113,8 @@ export function AdvancedTable<TItem extends object>(
 
   //   setExpanded(expandedState);
     
-  // }, [columns]);
- 
+  // }, [columns]); 
+   
   const table = useReactTable<TItem>({
     columns: columns,
     data, 
@@ -118,6 +123,9 @@ export function AdvancedTable<TItem extends object>(
     },
     initialState: {
       expanded: true, 
+      pagination: {
+        pageSize: props.pageSize,
+      } 
     },
     state: {
       sorting,
@@ -157,14 +165,39 @@ export function AdvancedTable<TItem extends object>(
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   });
 
+  const getTableState = React.useCallback(() => {
+    return {
+      sorting,
+      columnFilters,
+      globalFilter,
+      grouping,
+      expanded,
+      rowSelection,
+      columnOrder,
+      columnVisibility,
+      columnPinning,
+    };
+  }, [
+    sorting,
+    columnFilters,
+    globalFilter,
+    grouping,
+    expanded,
+    rowSelection,
+    columnOrder,
+    columnVisibility,
+    columnPinning,
+  ]);
+
   React.useImperativeHandle(
     ref,
     () => {
       return {
         table,
+        getTableState: getTableState,
       };
     },
-    [table]
+    [table, getTableState]
   );
 
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
@@ -182,26 +215,7 @@ export function AdvancedTable<TItem extends object>(
     virtualRows.length > 0
       ? totalSize - (virtualRows?.[virtualRows.length - 1]?.end || 0)
       : 0;
-
-  React.useEffect(() => {
-    const pageSize = props.pageSize;
-    if (pageSize && table) {
-      table.setPageSize(pageSize);
-    }
-  }, [props.pageSize, table]);
-
-  const { defaultHiddenColumns } = props;
-  React.useEffect(() => {
-    if (defaultHiddenColumns && table.setColumnVisibility) {
-      table.setColumnVisibility(() => {
-        return defaultHiddenColumns.reduce((acc, columnId) => {
-          acc[columnId] = false;
-          return acc;
-        }, {} as Record<string, boolean>);
-      });
-    }
-  }, [defaultHiddenColumns, table]);
-
+ 
   const headerGroups = table.getHeaderGroups();
 
   // utilities 
@@ -547,6 +561,10 @@ const HeaderCell: React.FC<{
                     <FilterFilled />
                   </strong>
                 )}
+
+                {
+                  header.column.getIsPinned() && (<PinRegular />)
+                }
 
                 {/* {header.column.columnDef.id && header.column.getCanResize() && <button ref={dragRef}>🟰</button>} */}
               </Button>

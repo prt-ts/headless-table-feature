@@ -123,7 +123,7 @@ function App() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setData(() => makeData(100000))
+      setData(() => makeData(1000))
       setIsLoading(false)
     }, 1000)
 
@@ -138,12 +138,18 @@ function App() {
     console.log(selectedRow)
   }
 
+  const logTableState = () => {
+    const tableState = tableRef.current?.getTableState();
+    console.log(tableState)
+  }
+
   const [selectionMode, setSelectionMode] = useState<"single" | "multiple" | undefined>("multiple")
 
 
   return (
     <div>
       <button onClick={logSelectedRows}>Log Selected Rows</button>
+      <button onClick={logTableState}>Get Table State</button>
       <Field label="Selection Mode">
         <RadioGroup
           value={selectionMode}
@@ -166,7 +172,15 @@ function App() {
         isLoading={isLoading}
         gridTitle={<strong>Grid Header</strong>}
         rowSelectionMode={selectionMode}
-        defaultHiddenColumns={["progress"]}
+        columnVisibility={{
+          progress: false, 
+          firstName: false, 
+        }}
+        sortingState={[
+          { id: "id", desc: false },
+          { id: "age", desc: true },
+        ]} 
+        groupingState={["status"]}
       // noItemPage={<div>No Item</div>}
       // noFilterMatchPage={<div>No Filter Match</div>}
       />
