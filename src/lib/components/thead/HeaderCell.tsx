@@ -170,7 +170,7 @@ export const HeaderCell: React.FC<HeaderCellProps> = ({
       colSpan={header.colSpan}
       style={{
         opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? "drag" : "pointer",
+        cursor: isDragging ? "grabbing" : "pointer",
         alignItems:
           headerDepth === totalNumberOfHeaderDepth ? "left" : "center",
         zIndex: 99,
