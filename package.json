@@ -8,14 +8,14 @@
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "uninstall:prt": "npm uninstall @prt-ts/fluent-react-table-v2",
-    "install:prt": "npm install @prt-ts/fluent-react-table-v2",
+    "uninstall:prt": "npm uninstall @prt-ts/fluent-react-table-v2 @fluentui/react-components",
+    "install:prt": "npm install @fluentui/react-components @prt-ts/fluent-react-table-v2",
     "update:prt": "npm run uninstall:prt && npm run install:prt"
   },
   "dependencies": {
     "@faker-js/faker": "^8.2.0",
-    "@fluentui/react-components": "^9.36.0",
-    "@prt-ts/fluent-react-table-v2": "^9.36.0-build.3.0",
+    "@fluentui/react-components": "^9.40.0",
+    "@prt-ts/fluent-react-table-v2": "^9.40.0-build.2.0",
     "i": "^0.3.7",
     "npm": "^10.2.3",
     "react": "^17.0.1",
