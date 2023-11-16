@@ -1,13 +1,17 @@
 import { createRef, useEffect, useState } from 'react'
 import './App.css'
-import { ColumnDef, Table, createColumnHelper } from './lib'
-import { Person, makeData } from './data/data'
-import { TableRef } from './lib/types'
+import {
+  ColumnDef,
+  Table,
+  createColumnHelper,
+  TableRef,
+} from "@prt-ts/fluent-react-table-v2";
+import { Person, makeData } from './data/data' 
 import { Button, Field, Radio, RadioGroup } from '@fluentui/react-components'
 import {
   EditRegular,
   DeleteRegular,
-} from "@fluentui/react-icons";
+} from "@fluentui/react-icons"; 
 
 function App() {
 
@@ -157,7 +161,7 @@ function App() {
 
 
   return (
-    <div>
+    <div> 
       <button onClick={logSelectedRows}>Log Selected Rows</button>
       <button onClick={logTableState}>Get Table State</button>
       <button onClick={saveCurrentTableState}>Save Current Table State</button>
@@ -182,12 +186,12 @@ function App() {
         pageSize={100}
         pageSizeOptions={[10, 20, 100, 1000, 10000]}
         isLoading={isLoading}
-        gridTitle={<strong>Grid Header</strong>}
-        rowSelectionMode={selectionMode}
-        columnVisibility={{
-          progress: false,
-          firstName: false,
-        }}
+        // gridTitle={<strong>Grid Header</strong>}
+        // rowSelectionMode={selectionMode}
+        // columnVisibility={{
+        //   progress: false,
+        //   firstName: false,
+        // }}
         // sortingState={[
         //   { id: "id", desc: false },
         //   { id: "age", desc: true },
