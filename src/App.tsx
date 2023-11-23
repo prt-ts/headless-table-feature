@@ -8,6 +8,7 @@ import {
   TableRef,
   createColumnHelper,
 } from "@prt-ts/fluent-react-table-v2"; 
+import { tableViews } from "./data/tableViews";
 
 export default function App() { 
   const columnHelper = createColumnHelper<Person>();
@@ -32,18 +33,23 @@ export default function App() {
   };
 
   const saveCurrentTableState = () => {
-    const tableState = tableRef.current?.saveCurrentTableState("view1");
-    console.log(tableState);
+     const tableState = tableRef.current?.getTableState();
+     localStorage.setItem("view1", JSON.stringify(tableState));
+      console.log(tableState);
   };
 
   const applyLastSavedTableState = () => {
-    const tableState = tableRef.current?.applySavedView("view1");
-    console.log(tableState);
+    const tableState = localStorage.getItem("view1");
+    if(!tableState) return;
+
+    tableRef.current?.applyTableState(JSON.parse(tableState));
   };
 
   const applyBeforeEditState = () => {
-    const tableState = tableRef.current?.applySavedView("table1_edit_temp");
-    console.log(tableState);
+    const tableState = localStorage.getItem("table1_edit_temp");
+    if(!tableState) return;
+
+    tableRef.current?.applyTableState(JSON.parse(tableState));
   };
 
   const columns = [
@@ -58,11 +64,10 @@ export default function App() {
               aria-label="Edit"
               size="small"
               onClick={async () => {
-                const saveResult =
-                  await tableRef?.current?.saveCurrentTableState(
-                    "table1_edit_temp"
-                  );
-                console.log(saveResult);
+
+                const tableState = tableRef.current?.getTableState();
+                localStorage.setItem("table1_edit_temp", JSON.stringify(tableState));
+                 
               }}
             />
             <Button
@@ -83,7 +88,7 @@ export default function App() {
         );
       },
       aggregatedCell: () => null,
-      filterFn: "arrIncludesSome",
+      filterFn: "arrIncludes",
       enableGrouping: false,
       enablePinning: true 
     }),
@@ -167,17 +172,7 @@ export default function App() {
               ? new Date(info.renderValue() as Date)?.toLocaleDateString()
               : "",
           aggregatedCell: () => null,
-          filterFn: (row, filterValue) => {
-            const value = row.getValue("createdAt") as string;
-            console.log(value);
-            if (!value) return false;
-            return value
-              ? new Date(value as string)
-                  ?.toLocaleDateString()
-                  .includes(filterValue as string)
-              : false;
-          },
-          enableColumnFilter: false,
+          filterFn: "dateRange"
         }),
       ],
     }),
@@ -201,6 +196,10 @@ export default function App() {
   useEffect(
     () => {
       applyBeforeEditState();
+
+      if(data.length > 0) {
+        localStorage.removeItem("table1_edit_temp");
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data]
@@ -240,6 +239,7 @@ export default function App() {
           progress: false,
           firstName: false,
         }}
+        views={tableViews}
         // sortingState={[
         //   { id: "id", desc: false }
         // ]}
